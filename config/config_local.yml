@@ -1,0 +1,16 @@
+configs:
+  #  [app configs]
+  app_port: "8080"
+  #  [database postgres configs]
+  db_postgres_host: "localhost"
+  db_postgres_port: "5432"
+  db_postgres_user: "postgres"
+  db_postgres_name: "how_to_go"
+  # [database mongo configs]
+  db_mongo_name: "how_to_go"
+  # [token]
+  jwt_duration: 10m
+  # [email]
+  email_sender_name: "Uiren"
+  from_email_address: "uiren.learning@yandex.kz"
+  verificatio_code_TTL: 3m
