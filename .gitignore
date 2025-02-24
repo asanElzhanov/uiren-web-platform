@@ -1,0 +1,10 @@
+*.log
+*.tmp
+*.swp
+
+.vscode/
+.idea/
+
+
+.env
+config/config_local.yml
