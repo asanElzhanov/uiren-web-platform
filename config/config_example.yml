@@ -1,0 +1,16 @@
+configs:
+  #  [app configs]
+  app_port: "8080"
+  #  [database postgres configs]
+  db_postgres_host: "localhost"
+  db_postgres_port: "5432"
+  db_postgres_user: "postgres"
+  db_postgres_name: "postgres"
+  # [database mongo configs]
+  db_mongo_name: "name"
+  # [token]
+  jwt_duration: 100h
+  # [email]
+  email_sender_name: "sender"
+  from_email_address: "address"
+  verificatio_code_TTL: 1000h
