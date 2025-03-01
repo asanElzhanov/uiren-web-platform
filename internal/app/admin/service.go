@@ -8,10 +8,24 @@ import (
 	"uiren/internal/infrastracture/middleware"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+func fiberInternalServerError(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+}
+
+func fiberOK(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "OK"})
+}
 
 type modulesService interface {
 	GetModule(ctx context.Context, code string) (modules.ModuleDTO, error)
+	CreateModule(ctx context.Context, dto modules.CreateModuleDTO) (primitive.ObjectID, error)
+	DeleteModule(ctx context.Context, code string) error
+	UpdateModule(ctx context.Context, code string, dto modules.UpdateModuleDTO) error
+	AddLessonToList(ctx context.Context, code, lessonCode string) error
+	DeleteLessonFromList(ctx context.Context, code, lessonCode string) error
 }
 
 type userService interface {
@@ -54,19 +68,21 @@ func (app *App) WithModulesSerivce(modulesService modulesService) {
 func (app *App) SetHandlers() {
 	api := app.appFiber.Group("/api")
 
-	//users
-	usersApi := api.Group("/users", middleware.JWTMiddleware())
-	usersApi.Post("/", app.createUser)
-	usersApi.Get("/:id", app.getUser)
-	usersApi.Patch("/:id", app.updateUser)
-
 	//auth
 	api.Get("/sign-in", app.signIn)
 	api.Get("/register", app.register)
 	api.Get("/verify/:username/:code", app.verification)
+	//users
+	usersApi := api.Group("/users", middleware.JWTMiddleware())
+	usersApi.Get("/:id", app.getUser)
+	usersApi.Post("/", app.createUser)
+	usersApi.Patch("/:id", app.updateUser)
 	//modules
-	api.Get("/modules/:code", app.getModuleInfo)
+	modulesApi := api.Group("/modules", middleware.JWTMiddleware())
+	modulesApi.Get("/:code", app.getModule)
+	modulesApi.Post("/", app.createModule)
+	modulesApi.Delete("/:code", app.deleteModule)
+	modulesApi.Patch("/:code", app.updateModule)
+	modulesApi.Post("/:code/lessons-list/:lessonCode", app.addLessonToList)
+	modulesApi.Delete("/:code/lessons-list/:lessonCode", app.deleteLessonFromList)
 }
-
-//appFiber.Get("/exportData", app.exportData)
-//appFiber.Post("/importData", app.importData)

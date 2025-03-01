@@ -87,7 +87,7 @@ func (app *App) verification(c *fiber.Ctx) error {
 		case auth.ErrVerificationExpired:
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrVerificationExpired.Error()})
 		default:
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrInternalServerError})
+			return fiberInternalServerError(c)
 		}
 	}
 

@@ -48,7 +48,7 @@ func (app *App) getUser(c *fiber.Ctx) error {
 		if err == users.ErrUserNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": ErrUserNotFound})
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+		return fiberInternalServerError(c)
 	}
 
 	resp := User{
@@ -96,7 +96,7 @@ func (app *App) updateUser(c *fiber.Ctx) error {
 		case users.ErrIncorrectPhone:
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": users.ErrIncorrectPhone.Error()})
 		default:
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+			return fiberInternalServerError(c)
 		}
 	}
 
@@ -122,6 +122,6 @@ func returnCreateUserError(c *fiber.Ctx, err error) error {
 	case users.ErrEmailExists:
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": users.ErrEmailExists.Error()})
 	default:
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+		return fiberInternalServerError(c)
 	}
 }

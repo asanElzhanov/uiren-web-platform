@@ -1,5 +1,7 @@
 package admin
 
+import "errors"
+
 var (
 	// Общие ошибки
 	ErrInternalServerError = "Internal server error"
@@ -74,4 +76,9 @@ var (
 	ErrAPINotFound          = "API endpoint not found"
 	ErrAPIMethodNotAllowed  = "Method not allowed"
 	ErrAPIRateLimitExceeded = "API rate limit exceeded"
+)
+
+var (
+	ErrInvalidReward       = errors.New("invalid reward")
+	ErrInvalidRequirements = errors.New("invalid requirements")
 )
