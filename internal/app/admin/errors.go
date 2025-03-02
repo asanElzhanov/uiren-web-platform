@@ -81,4 +81,5 @@ var (
 var (
 	ErrInvalidReward       = errors.New("invalid reward")
 	ErrInvalidRequirements = errors.New("invalid requirements")
+	ErrInvalidCode         = errors.New("invalid code")
 )

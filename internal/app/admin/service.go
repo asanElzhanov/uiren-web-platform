@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/users"
 	"uiren/internal/infrastracture/middleware"
@@ -28,6 +29,15 @@ type modulesService interface {
 	DeleteLessonFromList(ctx context.Context, code, lessonCode string) error
 }
 
+type lessonService interface {
+	GetLesson(ctx context.Context, code string) (lessons.LessonDTO, error)
+	CreateLesson(ctx context.Context, dto lessons.CreateLessonDTO) (primitive.ObjectID, error)
+	UpdateLesson(ctx context.Context, code string, dto lessons.UpdateLessonDTO) error
+	DeleteLesson(ctx context.Context, code string) error
+	AddExerciseToList(ctx context.Context, code, exerciseCode string) error
+	DeleteExerciseFromList(ctx context.Context, code, exerciseCode string) error
+}
+
 type userService interface {
 	CreateUser(ctx context.Context, params users.CreateUserDTO) (string, error)
 	GetUserForLogin(ctx context.Context, username string) (users.UserDTO, error)
@@ -45,6 +55,7 @@ type App struct {
 	userService    userService
 	authService    authService
 	modulesService modulesService
+	lessonService  lessonService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -63,6 +74,10 @@ func (app *App) WithAuthService(authService authService) {
 
 func (app *App) WithModulesSerivce(modulesService modulesService) {
 	app.modulesService = modulesService
+}
+
+func (app *App) WithLessonService(lessonService lessonService) {
+	app.lessonService = lessonService
 }
 
 func (app *App) SetHandlers() {
@@ -85,4 +100,12 @@ func (app *App) SetHandlers() {
 	modulesApi.Patch("/:code", app.updateModule)
 	modulesApi.Post("/:code/lessons-list/:lessonCode", app.addLessonToList)
 	modulesApi.Delete("/:code/lessons-list/:lessonCode", app.deleteLessonFromList)
+	//lessons
+	lessonApi := api.Group("/lessons", middleware.JWTMiddleware())
+	lessonApi.Get("/:code", app.getLesson)
+	lessonApi.Post("/", app.createLesson)
+	lessonApi.Patch("/:code", app.updateLesson)
+	lessonApi.Delete("/:code", app.deleteLesson)
+	lessonApi.Post(":code/exercises-list/:exerciseCode", app.addExerciseToList)
+	lessonApi.Delete(":code/exercises-list/:exerciseCode", app.deleteExerciseFromList)
 }

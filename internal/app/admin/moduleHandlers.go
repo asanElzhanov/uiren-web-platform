@@ -54,6 +54,11 @@ func (app *App) createModule(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	if err := validateCode(req.Code); err != nil {
+		logger.Error("app.CreateModule validateCode: ", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
 	id, err := app.modulesService.CreateModule(ctx, req)
 	if err != nil {
 		logger.Error("app.createModule modulesService.CreateModule: ", err)

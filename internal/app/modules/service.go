@@ -57,11 +57,6 @@ func (s ModulesService) CreateModule(ctx context.Context, dto CreateModuleDTO) (
 	dto.CreatedAt = time.Now()
 	dto.Lessons = make([]string, 0)
 
-	if err := validateCode(dto.Code); err != nil {
-		logger.Error("ModulesService.CreateModule validateCode: ", err)
-		return primitive.NilObjectID, err
-	}
-
 	id, err := s.repo.createModule(ctx, dto)
 	if err != nil {
 		logger.Error("ModulesService.CreateModule repo.createModule: ", err)

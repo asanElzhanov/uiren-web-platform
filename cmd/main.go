@@ -110,6 +110,7 @@ func main() {
 	appService.WithUserService(userService)
 	appService.WithAuthService(authService)
 	appService.WithModulesSerivce(modulesService)
+	appService.WithLessonService(lessonService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

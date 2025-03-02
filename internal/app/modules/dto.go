@@ -1,14 +1,8 @@
 package modules
 
 import (
-	"regexp"
-	"strings"
 	"time"
 	"uiren/internal/app/lessons"
-)
-
-var (
-	codeRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 )
 
 type module struct {
@@ -54,15 +48,6 @@ func (module module) toDTO(lessons []lessons.LessonDTO) ModuleDTO {
 		CreatedAt:   module.CreatedAt,
 		DeletedAt:   moduleDeletedAt,
 	}
-}
-
-func validateCode(code string) error {
-	code = strings.TrimSpace(code)
-	if code == "" || !codeRegex.MatchString(code) || strings.Contains(code, " ") {
-		return ErrInvalidCode
-	}
-
-	return nil
 }
 
 type UnlockRequirements struct {

@@ -1,5 +1,14 @@
 package admin
 
+import (
+	"regexp"
+	"strings"
+)
+
+var (
+	codeRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+)
+
 func validateObjectKeys(data map[string]interface{}, key string, requiredFields map[string]string, errReturn error) error {
 	value, exists := data[key]
 	if !exists {
@@ -52,6 +61,16 @@ func validateRewardsAndRequirements(rawData map[string]interface{}) error {
 		"min_xp":          "float64",
 	}, ErrInvalidRequirements); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// modules, lessons, exercises
+func validateCode(code string) error {
+	code = strings.TrimSpace(code)
+	if code == "" || !codeRegex.MatchString(code) || strings.Contains(code, " ") {
+		return ErrInvalidCode
 	}
 
 	return nil
