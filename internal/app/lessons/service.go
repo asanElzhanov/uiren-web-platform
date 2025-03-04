@@ -20,7 +20,7 @@ type repository interface {
 }
 
 type exerciseService interface {
-	GetExercisesByCodes(ctx context.Context, codes []string) ([]exercises.ExerciseDTO, error)
+	GetExercisesByCodes(ctx context.Context, codes []string) ([]exercises.Exercise, error)
 }
 
 type LessonsService struct {

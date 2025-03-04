@@ -66,6 +66,60 @@ func validateRewardsAndRequirements(rawData map[string]interface{}) error {
 	return nil
 }
 
+// exercises
+func validatePairs(rawData map[string]interface{}) error {
+	v, exists := rawData["type"]
+	if !exists {
+		return ErrInvalidType
+	}
+	exerciseType, ok := v.(string)
+	if !ok {
+		return ErrInvalidType
+	}
+	if exerciseType != "match_pairs" {
+		return nil
+	}
+
+	v, exists = rawData["pairs"]
+	if !exists {
+		return ErrInvalidPairs
+	}
+
+	list, ok := v.([]interface{})
+	if !ok {
+		return ErrInvalidPairs
+	}
+
+	for _, item := range list {
+		pair, ok := item.(map[string]interface{})
+		if !ok {
+			return ErrInvalidPairs
+		}
+
+		if err := validatePair(pair); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validatePair(rawData map[string]interface{}) error {
+	requiredFields := map[string]string{
+		"term":  "string",
+		"match": "string",
+	}
+
+	for field, expectedType := range requiredFields {
+		val, exists := rawData[field]
+		if !exists || !isValidType(val, expectedType) {
+			return ErrInvalidPairs
+		}
+	}
+
+	return nil
+}
+
 // modules, lessons, exercises
 func validateCode(code string) error {
 	code = strings.TrimSpace(code)

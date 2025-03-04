@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/exercises"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/users"
@@ -38,6 +39,13 @@ type lessonService interface {
 	DeleteExerciseFromList(ctx context.Context, code, exerciseCode string) error
 }
 
+type exerciseService interface {
+	GetExercise(ctx context.Context, code string) (exercises.Exercise, error)
+	CreateExercise(ctx context.Context, dto exercises.CreateExerciseDTO) (primitive.ObjectID, error)
+	UpdateExercise(ctx context.Context, code string, dto exercises.UpdateExerciseDTO) error
+	DeleteExercise(ctx context.Context, code string) error
+}
+
 type userService interface {
 	CreateUser(ctx context.Context, params users.CreateUserDTO) (string, error)
 	GetUserForLogin(ctx context.Context, username string) (users.UserDTO, error)
@@ -51,11 +59,12 @@ type authService interface {
 }
 
 type App struct {
-	appFiber       *fiber.App
-	userService    userService
-	authService    authService
-	modulesService modulesService
-	lessonService  lessonService
+	appFiber        *fiber.App
+	userService     userService
+	authService     authService
+	modulesService  modulesService
+	lessonService   lessonService
+	exerciseService exerciseService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -78,6 +87,10 @@ func (app *App) WithModulesSerivce(modulesService modulesService) {
 
 func (app *App) WithLessonService(lessonService lessonService) {
 	app.lessonService = lessonService
+}
+
+func (app *App) WithExerciseService(exerciseService exerciseService) {
+	app.exerciseService = exerciseService
 }
 
 func (app *App) SetHandlers() {
@@ -108,4 +121,10 @@ func (app *App) SetHandlers() {
 	lessonApi.Delete("/:code", app.deleteLesson)
 	lessonApi.Post(":code/exercises-list/:exerciseCode", app.addExerciseToList)
 	lessonApi.Delete(":code/exercises-list/:exerciseCode", app.deleteExerciseFromList)
+	//exercises
+	exerciseApi := api.Group("/exercises", middleware.JWTMiddleware())
+	exerciseApi.Get("/:code", app.getExercise)
+	exerciseApi.Post("/", app.createExercise)
+	exerciseApi.Patch("/:code", app.updateExercise)
+	exerciseApi.Delete("/:code", app.deleteExercise)
 }

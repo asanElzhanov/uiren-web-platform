@@ -18,12 +18,12 @@ type LessonDTO struct {
 	Code        string
 	Title       string
 	Description string
-	Exercises   []exercises.ExerciseDTO
+	Exercises   []exercises.Exercise
 	CreatedAt   time.Time
 	DeletedAt   time.Time
 }
 
-func (lesson lesson) toDTO(exercises []exercises.ExerciseDTO) LessonDTO {
+func (lesson lesson) toDTO(exercises []exercises.Exercise) LessonDTO {
 	var lessonDeletedAt time.Time
 	if lesson.DeletedAt != nil {
 		lessonDeletedAt = *lesson.DeletedAt

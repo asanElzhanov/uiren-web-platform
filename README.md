@@ -2,8 +2,8 @@
 
 ### **MVP:**
 - ~~**modules CRUD**~~
-- **lessons CRUD**
-- **Exercises CRUD**
+- ~~**lessons CRUD**~~
+- ~~**Exercises CRUD(4 types)**~~
 - **data, metadata services delete**
 - **achievements** 
 - **refresh token**

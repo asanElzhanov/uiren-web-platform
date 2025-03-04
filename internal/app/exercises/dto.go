@@ -1,98 +1,94 @@
 package exercises
 
 import (
-	"errors"
 	"time"
 )
 
-type ExerciseType string
-
 const (
-	multipleChoiceType ExerciseType = "multiple_choice"
-	fillInTheBlankType ExerciseType = "fill_in_the_blank"
-	translateType      ExerciseType = "translate"
-	matchPairsType     ExerciseType = "match_pairs"
-	orderWordsType     ExerciseType = "order_words"
+	multipleChoiceType = "multiple_choice"
+	manualTypingType   = "manual_typing"
+	matchPairsType     = "match_pairs"
+	orderWordsType     = "order_words"
 )
-
-func GetValidExerciseType(str string) (ExerciseType, error) {
-	switch ExerciseType(str) {
-	case multipleChoiceType, fillInTheBlankType, translateType, matchPairsType, orderWordsType:
-		return ExerciseType(str), nil
-	default:
-		return "", errors.New("invalid exercise type")
-	}
-}
 
 type Pair struct {
 	Term  string `bson:"term" json:"term"`   // match_pairs
 	Match string `bson:"match" json:"match"` // match_pairs
 }
 
-type exercise struct {
+type Exercise struct {
+	// common fields
+	Code         string     `bson:"code" json:"code"`
+	ExerciseType string     `bson:"type" json:"type"`
+	Question     string     `bson:"question" json:"question"`
+	Hints        []string   `bson:"hints" json:"hints"`
+	Explanation  string     `bson:"explanation" json:"explanation"`
+	CreatedAt    time.Time  `bson:"created_at" json:"created_at"`
+	DeletedAt    *time.Time `bson:"deleted_at,omitempty" json:"deleted_at,omitempty"`
+
+	// multiple_choice, order_words
+	Options []string `bson:"options,omitempty" json:"options,omitempty"`
+
+	// multiple_choice, manual_typing
+	CorrectAnswer string `bson:"correct_answer,omitempty" json:"correct_answer,omitempty"`
+
+	// order_words
+	CorrectOrder []string `bson:"correct_order,omitempty" json:"correct_order,omitempty"`
+
+	// match_pairs
+	Pairs []Pair `bson:"pairs,omitempty" json:"pairs,omitempty"`
+}
+
+// repo dto
+type CreateExerciseDTO struct {
 	Code          string     `bson:"code" json:"code"`
 	ExerciseType  string     `bson:"type" json:"type"`
 	Question      string     `bson:"question" json:"question"`
-	Options       []string   `bson:"options,omitempty" json:"options,omitempty"`               // multiple_choice, fill_in_the_blank, order_words
-	CorrectAnswer string     `bson:"correct_answer,omitempty" json:"correct_answer,omitempty"` // multiple_choice, fill_in_the_blank, translate
-	CorrectOrder  []string   `bson:"correct_order,omitempty" json:"correct_order,omitempty"`   // order_words
-	Pairs         []Pair     `bson:"pairs,omitempty" json:"pairs,omitempty"`                   // match_pairs
-	Explanation   string     `bson:"explanation" json:"explanation"`
 	Hints         []string   `bson:"hints" json:"hints"`
+	Explanation   string     `bson:"explanation" json:"explanation"`
 	CreatedAt     time.Time  `bson:"created_at" json:"created_at"`
-	DeletedAt     *time.Time `bson:"deleted_at,omitempty" json:"deleted_at,omitempty"`
+	DeletedAt     *time.Time `bson:"deleted_at" json:"deleted_at"`
+	Options       []string   `bson:"options,omitempty" json:"options,omitempty"`
+	CorrectAnswer *string    `bson:"correct_answer,omitempty" json:"correct_answer,omitempty"`
+	CorrectOrder  []string   `bson:"correct_order,omitempty" json:"correct_order,omitempty"`
+	Pairs         []Pair     `bson:"pairs,omitempty" json:"pairs,omitempty"`
 }
 
-type ExerciseDTO struct {
-	Code          string
-	ExerciseType  ExerciseType
-	Question      string
-	Options       []string
-	CorrectAnswer string
-	CorrectOrder  []string
-	Pairs         []Pair
-	Explanation   string
-	Hints         []string
-	CreatedAt     time.Time
-	DeletedAt     time.Time
+type UpdateExerciseDTO struct {
+	Question      *string  `bson:"question,omitempty" json:"question,omitempty"`
+	Hints         []string `bson:"hints,omitempty" json:"hints,omitempty"`
+	Explanation   *string  `bson:"explanation,omitempty" json:"explanation,omitempty"`
+	Options       []string `bson:"options,omitempty" json:"options,omitempty"`
+	CorrectAnswer *string  `bson:"correct_answer,omitempty" json:"correct_answer,omitempty"`
+	CorrectOrder  []string `bson:"correct_order,omitempty" json:"correct_order,omitempty"`
+	Pairs         []Pair   `bson:"pairs,omitempty" json:"pairs,omitempty"`
 }
 
-func (exercise exercise) toDTO(exerciseType ExerciseType) ExerciseDTO {
-	var exerciseDeletedAt time.Time
-	if exercise.DeletedAt != nil {
-		exerciseDeletedAt = *exercise.DeletedAt
-	}
-	var exerciseOptions []string
-	if exercise.Options != nil {
-		exerciseOptions = exercise.Options
-	}
-
-	var exerciseCorrectAnswer string
-	if exercise.CorrectAnswer != "" {
-		exerciseCorrectAnswer = exercise.CorrectAnswer
-	}
-
-	var exerciseCorrectOrder []string
-	if exercise.CorrectOrder != nil {
-		exerciseCorrectOrder = exercise.CorrectOrder
-	}
-
-	var exercisePairs []Pair
-	if exercise.Pairs != nil {
-		exercisePairs = exercise.Pairs
-	}
-
-	return ExerciseDTO{
-		Code:          exercise.Code,
-		ExerciseType:  exerciseType,
-		Question:      exercise.Question,
-		Options:       exerciseOptions,
-		CorrectAnswer: exerciseCorrectAnswer,
-		CorrectOrder:  exerciseCorrectOrder,
-		Pairs:         exercisePairs,
-		Explanation:   exercise.Explanation,
-		Hints:         exercise.Hints,
-		CreatedAt:     exercise.CreatedAt,
-		DeletedAt:     exerciseDeletedAt,
-	}
+type ExerciseDTO interface {
+	GetOptions() []string
+	GetCorrectAnswer() *string
+	GetCorrectOrder() []string
+	GetPairs() []Pair
+	SetOptions([]string)
+	SetCorrectAnswer(*string)
+	SetCorrectOrder([]string)
+	SetPairs([]Pair)
 }
+
+func (dto *CreateExerciseDTO) GetOptions() []string           { return dto.Options }
+func (dto *CreateExerciseDTO) GetCorrectAnswer() *string      { return dto.CorrectAnswer }
+func (dto *CreateExerciseDTO) GetCorrectOrder() []string      { return dto.CorrectOrder }
+func (dto *CreateExerciseDTO) GetPairs() []Pair               { return dto.Pairs }
+func (dto *CreateExerciseDTO) SetOptions(opts []string)       { dto.Options = opts }
+func (dto *CreateExerciseDTO) SetCorrectAnswer(ans *string)   { dto.CorrectAnswer = ans }
+func (dto *CreateExerciseDTO) SetCorrectOrder(order []string) { dto.CorrectOrder = order }
+func (dto *CreateExerciseDTO) SetPairs(pairs []Pair)          { dto.Pairs = pairs }
+
+func (dto *UpdateExerciseDTO) GetOptions() []string           { return dto.Options }
+func (dto *UpdateExerciseDTO) GetCorrectAnswer() *string      { return dto.CorrectAnswer }
+func (dto *UpdateExerciseDTO) GetCorrectOrder() []string      { return dto.CorrectOrder }
+func (dto *UpdateExerciseDTO) GetPairs() []Pair               { return dto.Pairs }
+func (dto *UpdateExerciseDTO) SetOptions(opts []string)       { dto.Options = opts }
+func (dto *UpdateExerciseDTO) SetCorrectAnswer(ans *string)   { dto.CorrectAnswer = ans }
+func (dto *UpdateExerciseDTO) SetCorrectOrder(order []string) { dto.CorrectOrder = order }
+func (dto *UpdateExerciseDTO) SetPairs(pairs []Pair)          { dto.Pairs = pairs }
