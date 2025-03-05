@@ -28,7 +28,8 @@ import (
 
 var (
 	//app
-	appPortKey = "app_port"
+	appPortKey  = "app_port"
+	appLogLevel = "app_log_level"
 	//db postgres
 	dbPostgresHostKey = "db_postgres_host"
 	dbPostgresPortKey = "db_postgres_port"
@@ -46,6 +47,7 @@ var (
 
 func main() {
 	app := fiber.New()
+	logger.InitLogger(config.GetValue(appLogLevel).String())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -63,7 +65,7 @@ func main() {
 		PostgresName: config.GetValue(dbPostgresNameKey).String(),
 	})
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal("postgres db: ", err)
 		return
 	}
 	logger.Info("connected to database postgres")
@@ -73,7 +75,7 @@ func main() {
 		DBName: config.GetValue(dbMongoName).String(),
 	})
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal("mongo db: ", err)
 		return
 	}
 	defer func() {

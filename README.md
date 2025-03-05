@@ -7,7 +7,7 @@
 - ~~**data, metadata services delete**~~
 - ~~**achievements CRUD**~~ 
 - **refresh token**
-- **ZAP logging**
+- ~~**ZAP logging**~~
 - **friend system**
 
 
