@@ -5,7 +5,7 @@
 - ~~**lessons CRUD**~~
 - ~~**Exercises CRUD(4 types)**~~
 - ~~**data, metadata services delete**~~
-- **achievements** 
+- ~~**achievements CRUD**~~ 
 - **refresh token**
 - **ZAP logging**
 - **friend system**

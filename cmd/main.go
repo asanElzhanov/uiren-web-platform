@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"uiren/internal/app/achievements"
 	"uiren/internal/app/admin"
 	"uiren/internal/app/auth"
 	"uiren/internal/app/exercises"
@@ -99,6 +100,9 @@ func main() {
 	moduleRepo := modules.NewModulesRepository(mongoDB)
 	modulesService := modules.NewModulesService(moduleRepo, lessonService)
 
+	achievementRepo := achievements.NewAchievementRepository(postgresDB)
+	achievementService := achievements.NewAchievementService(achievementRepo)
+
 	userRepo := users.NewUserRepository(postgresDB)
 	userService := users.NewUserService(userRepo)
 
@@ -112,6 +116,7 @@ func main() {
 	appService.WithModulesSerivce(modulesService)
 	appService.WithLessonService(lessonService)
 	appService.WithExerciseService(exerciseService)
+	appService.WithAchievementService(achievementService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

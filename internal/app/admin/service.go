@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"uiren/internal/app/achievements"
 	"uiren/internal/app/auth"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/lessons"
@@ -46,6 +47,16 @@ type exerciseService interface {
 	DeleteExercise(ctx context.Context, code string) error
 }
 
+type achievementService interface {
+	CreateAchievement(ctx context.Context, name string) (achievements.AchievementDTO, error)
+	GetAchievement(ctx context.Context, id int) (achievements.AchievementDTO, error)
+	UpdateAchievement(ctx context.Context, dto achievements.UpdateAchievementDTO) (string, error)
+	DeleteAchievement(ctx context.Context, id int) error
+
+	AddAchievementLevel(ctx context.Context, dto achievements.AddAchievementLevelDTO) error
+	DeleteAchievementLevel(ctx context.Context, dto achievements.DeleteAchievementLevelDTO) error
+}
+
 type userService interface {
 	CreateUser(ctx context.Context, params users.CreateUserDTO) (string, error)
 	GetUserForLogin(ctx context.Context, username string) (users.UserDTO, error)
@@ -59,12 +70,13 @@ type authService interface {
 }
 
 type App struct {
-	appFiber        *fiber.App
-	userService     userService
-	authService     authService
-	modulesService  modulesService
-	lessonService   lessonService
-	exerciseService exerciseService
+	appFiber           *fiber.App
+	userService        userService
+	authService        authService
+	modulesService     modulesService
+	lessonService      lessonService
+	exerciseService    exerciseService
+	achievementService achievementService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -91,6 +103,10 @@ func (app *App) WithLessonService(lessonService lessonService) {
 
 func (app *App) WithExerciseService(exerciseService exerciseService) {
 	app.exerciseService = exerciseService
+}
+
+func (app *App) WithAchievementService(achievementService achievementService) {
+	app.achievementService = achievementService
 }
 
 func (app *App) SetHandlers() {
@@ -127,4 +143,12 @@ func (app *App) SetHandlers() {
 	exerciseApi.Post("/", app.createExercise)
 	exerciseApi.Patch("/:code", app.updateExercise)
 	exerciseApi.Delete("/:code", app.deleteExercise)
+	//achievements
+	achievementsApi := api.Group("/achievements", middleware.JWTMiddleware())
+	achievementsApi.Post("/", app.createAchievement)
+	achievementsApi.Patch("/", app.updateAchievement)
+	achievementsApi.Delete("/", app.deleteAchievement)
+	achievementsApi.Get("/:id", app.getAchievement)
+	achievementsApi.Post("/levels", app.addAchievementLevel)
+	achievementsApi.Delete("/levels", app.deleteAchievementLevel)
 }
