@@ -64,9 +64,10 @@ type userService interface {
 }
 
 type authService interface {
-	SignIn(ctx context.Context, params auth.LoginParams) (string, error)
+	SignIn(ctx context.Context, params auth.LoginParams) (string, string, error)
 	Register(ctx context.Context, params auth.RegisterParams) (string, error)
 	VerifyUser(ctx context.Context, username, code string) error
+	RefreshToken(ctx context.Context, token string) (string, string, error)
 }
 
 type App struct {
@@ -116,6 +117,7 @@ func (app *App) SetHandlers() {
 	api.Get("/sign-in", app.signIn)
 	api.Get("/register", app.register)
 	api.Get("/verify/:username/:code", app.verification)
+	api.Get("/refresh-token", app.refreshToken)
 	//users
 	usersApi := api.Group("/users", middleware.JWTMiddleware())
 	usersApi.Get("/:id", app.getUser)

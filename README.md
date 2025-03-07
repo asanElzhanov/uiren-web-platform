@@ -6,7 +6,7 @@
 - ~~**Exercises CRUD(4 types)**~~
 - ~~**data, metadata services delete**~~
 - ~~**achievements CRUD**~~ 
-- **refresh token**
+- ~~**refresh token**~~
 - ~~**ZAP logging**~~
 - **friend system**
 

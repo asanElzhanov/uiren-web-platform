@@ -37,8 +37,14 @@ var (
 	dbPostgresNameKey = "db_postgres_name"
 	//db mongo
 	dbMongoName = "db_mongo_name"
+	//db redis
+	dbRedisAddressKey  = "db_redis_address"
+	dbRedisPasswordKey = "db_redis_password"
+	dbRedisDBKey       = "db_redis_db"
+	dbRedisDataTTLKey  = "db_redis_data_TTL"
 	//jwt
-	jwtDurationKey = "jwt_duration"
+	jwtDurationKey       = "jwt_duration"
+	refreshTokenDuration = "refresh_token_duration"
 	//email
 	emailSenderNameKey     = "email_sender_name"
 	fromEmailAddressKey    = "from_email_address"
@@ -85,6 +91,22 @@ func main() {
 	}()
 	logger.Info("connected to MongoDB: ", mongoDB.Name())
 
+	redisDB, err := database.GetRedisDatabase(ctx, database.RedisConfig{
+		Address:  config.GetValue(dbRedisAddressKey).String(),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       config.GetValue(dbRedisDBKey).Int(),
+		DataTTL:  config.GetValue(dbRedisDataTTLKey).Duration(),
+	})
+	if err != nil {
+		logger.Fatal("redis db: ", err)
+		return
+	}
+	defer func() {
+		if redisDB != nil {
+			redisDB.Client.Close()
+		}
+	}()
+
 	yandex_sender.Init(
 		config.GetValue(emailSenderNameKey).String(),
 		config.GetValue(fromEmailAddressKey).String(),
@@ -111,6 +133,8 @@ func main() {
 	verifRepo := auth.NewVerificationRepository(postgresDB)
 	authService := auth.NewAuthService(userService, jwtMaker, verifRepo)
 	authService.SetVerificationCodeTTL(config.GetValue(verificationCodeTTLKey).Duration())
+	authService.WithRedisClient(redisDB)
+	authService.SetRefreshTokenTTL(config.GetValue(refreshTokenDuration).Duration())
 
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)
