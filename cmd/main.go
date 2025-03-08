@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,7 @@ import (
 	"uiren/internal/app/admin"
 	"uiren/internal/app/auth"
 	"uiren/internal/app/exercises"
+	"uiren/internal/app/friendship"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/users"
@@ -53,14 +53,18 @@ var (
 
 func main() {
 	app := fiber.New()
-	logger.InitLogger(config.GetValue(appLogLevel).String())
+	err := logger.InitLogger(config.GetValue(appLogLevel).String())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err := godotenv.Load()
+	err = godotenv.Load()
 	if err != nil {
-		log.Fatal(".env file loading error")
+		logger.Fatal(".env file loading error")
 	}
 
 	postgresDB, err := database.GetPostgresDatabase(ctx, database.PostgresConfig{
@@ -130,6 +134,9 @@ func main() {
 	userRepo := users.NewUserRepository(postgresDB)
 	userService := users.NewUserService(userRepo)
 
+	friendshipRepo := friendship.NewFriendshipRepository(postgresDB)
+	friendshipService := friendship.NewFriendshipService(friendshipRepo, userService)
+
 	verifRepo := auth.NewVerificationRepository(postgresDB)
 	authService := auth.NewAuthService(userService, jwtMaker, verifRepo)
 	authService.SetVerificationCodeTTL(config.GetValue(verificationCodeTTLKey).Duration())
@@ -143,6 +150,7 @@ func main() {
 	appService.WithLessonService(lessonService)
 	appService.WithExerciseService(exerciseService)
 	appService.WithAchievementService(achievementService)
+	appService.WithFriendshipService(friendshipService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

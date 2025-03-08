@@ -258,3 +258,28 @@ func (r *userRepository) enableUser(ctx context.Context, username string) error 
 	_, err := r.db.Exec(ctx, query, username)
 	return err
 }
+
+func (r *userRepository) checkUserExists(ctx context.Context, username string) error {
+	var (
+		query = `
+		SELECT 
+			true
+		FROM 
+			users
+		WHERE 
+			username = $1 
+			AND is_active = true 
+			AND deleted_at IS NULL;
+		`
+		exists bool
+	)
+
+	if err := r.db.QueryRow(ctx, query, username).Scan(&exists); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrUserNotFound
+		}
+		return err
+	}
+
+	return nil
+}

@@ -8,7 +8,7 @@
 - ~~**achievements CRUD**~~ 
 - ~~**refresh token**~~
 - ~~**ZAP logging**~~
-- **friend system**
+- ~~**friend system**~~
 
 
 ### **Функционал для пользователей:**  

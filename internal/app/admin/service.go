@@ -5,6 +5,7 @@ import (
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/auth"
 	"uiren/internal/app/exercises"
+	"uiren/internal/app/friendship"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/users"
@@ -70,6 +71,13 @@ type authService interface {
 	RefreshToken(ctx context.Context, token string) (string, string, error)
 }
 
+type friendshipService interface {
+	SendFriendRequest(ctx context.Context, friendshipRequest friendship.FriendshipRequestDTO) (friendship.Friendship, error)
+	HandleFriendRequest(ctx context.Context, friendshipRequest friendship.FriendshipRequestDTO) (friendship.Friendship, error)
+	GetFriendList(ctx context.Context, username string) (friendship.FriendList, error)
+	GetRequestList(ctx context.Context, username string) (friendship.FriendList, error)
+}
+
 type App struct {
 	appFiber           *fiber.App
 	userService        userService
@@ -78,6 +86,7 @@ type App struct {
 	lessonService      lessonService
 	exerciseService    exerciseService
 	achievementService achievementService
+	friendshipService  friendshipService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -108,6 +117,10 @@ func (app *App) WithExerciseService(exerciseService exerciseService) {
 
 func (app *App) WithAchievementService(achievementService achievementService) {
 	app.achievementService = achievementService
+}
+
+func (app *App) WithFriendshipService(friendshipService friendshipService) {
+	app.friendshipService = friendshipService
 }
 
 func (app *App) SetHandlers() {
@@ -153,4 +166,10 @@ func (app *App) SetHandlers() {
 	achievementsApi.Get("/:id", app.getAchievement)
 	achievementsApi.Post("/levels", app.addAchievementLevel)
 	achievementsApi.Delete("/levels", app.deleteAchievementLevel)
+	//friends
+	friendsApi := api.Group("/friends", middleware.JWTMiddleware())
+	friendsApi.Post("/send-request", app.sendFriendRequest)
+	friendsApi.Post("/handle-request", app.handleFriendRequest)
+	friendsApi.Get("/friend-list", app.getFriendList)
+	friendsApi.Get("/request-list", app.getRequestList)
 }

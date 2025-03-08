@@ -13,6 +13,7 @@ type repository interface {
 	getUserByEmail(ctx context.Context, email string) (UserDTO, error)
 	updateUser(ctx context.Context, dto UpdateUserDTO) (UserDTO, error)
 	enableUser(ctx context.Context, username string) error
+	checkUserExists(ctx context.Context, username string) error
 }
 
 type UserService struct {
@@ -93,4 +94,10 @@ func (s *UserService) EnableUser(ctx context.Context, username string) error {
 	logger.Info("UserService.EnableUser newRequest")
 
 	return s.repo.enableUser(ctx, username)
+}
+
+func (s *UserService) CheckUserExists(ctx context.Context, username string) error {
+	logger.Info("UserService.CheckUserExists new request")
+
+	return s.repo.checkUserExists(ctx, username)
 }
