@@ -4,8 +4,10 @@ import (
 	"context"
 	"uiren/pkg/logger"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
+
+//go:generate mockgen -source service.go -destination service_mock.go -package achievements
 
 type achievementRepo interface {
 	getAchievement(ctx context.Context, id int) (achievement, error)
@@ -13,13 +15,19 @@ type achievementRepo interface {
 	updateAchievement(ctx context.Context, dto UpdateAchievementDTO) (string, error)
 	deleteAchievement(ctx context.Context, id int) error
 
-	beginTransaction(ctx context.Context) (pgx.Tx, error)
+	beginTransaction(ctx context.Context) (transaction, error)
 
 	getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevelDTO, error)
 	getLastLevelAndTreshold(ctx context.Context, achID int) (LevelData, error)
 	addLevel(ctx context.Context, dto AddAchievementLevelDTO) error
-	deleteLevel(ctx context.Context, tx pgx.Tx, dto DeleteAchievementLevelDTO) error
-	decrementUpperLevels(ctx context.Context, tx pgx.Tx, dto DeleteAchievementLevelDTO) error
+	deleteLevel(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error
+	decrementUpperLevels(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error
+}
+
+type transaction interface {
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
+	Exec(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error)
 }
 
 type AchievementService struct {
@@ -117,7 +125,13 @@ func (s AchievementService) DeleteAchievementLevel(ctx context.Context, dto Dele
 		logger.Error("AchievementService.DeleteAchievementLevel achievementRepo.beginTransaction: ", err)
 		return err
 	}
-	defer tx.Rollback(ctx)
+
+	commited := false
+	defer func() {
+		if !commited {
+			_ = tx.Rollback(ctx)
+		}
+	}()
 
 	if err := s.achievementRepo.deleteLevel(ctx, tx, dto); err != nil {
 		logger.Error("AchievementService.DeleteAchievementLevel achievementRepo.deleteLevel: ", err)
@@ -133,5 +147,7 @@ func (s AchievementService) DeleteAchievementLevel(ctx context.Context, dto Dele
 		logger.Error("AchievementService.DeleteAchievementLevel tx.Commit: ", err)
 		return err
 	}
+
+	commited = true
 	return nil
 }

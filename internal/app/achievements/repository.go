@@ -19,7 +19,7 @@ func NewAchievementRepository(db *pgxpool.Pool) *achievementRepository {
 	}
 }
 
-func (r *achievementRepository) beginTransaction(ctx context.Context) (pgx.Tx, error) {
+func (r *achievementRepository) beginTransaction(ctx context.Context) (transaction, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (r *achievementRepository) addLevel(ctx context.Context, dto AddAchievement
 	return nil
 }
 
-func (r *achievementRepository) deleteLevel(ctx context.Context, tx pgx.Tx, dto DeleteAchievementLevelDTO) error {
+func (r *achievementRepository) deleteLevel(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error {
 	var (
 		query = `
 		DELETE FROM achievements_levels
@@ -271,7 +271,7 @@ func (r *achievementRepository) deleteLevel(ctx context.Context, tx pgx.Tx, dto 
 	return nil
 }
 
-func (r *achievementRepository) decrementUpperLevels(ctx context.Context, tx pgx.Tx, dto DeleteAchievementLevelDTO) error {
+func (r *achievementRepository) decrementUpperLevels(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error {
 	var (
 		query = `
 		UPDATE achievements_levels
