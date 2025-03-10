@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"errors"
 	"fmt"
 	"uiren/internal/app/auth"
 	"uiren/internal/app/users"
@@ -33,9 +32,12 @@ func (app *App) signIn(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		if errors.Is(err, auth.ErrInvalidCredentials) {
-			logger.Error("app.signIn error: ", ErrInvalidCredentials)
+		logger.Error("app.signIn error: ", err)
+		switch err {
+		case auth.ErrInvalidCredentials:
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": ErrInvalidCredentials})
+		default:
+			return fiberInternalServerError(c)
 		}
 	}
 
@@ -86,6 +88,8 @@ func (app *App) verification(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrVerificationInvalid.Error()})
 		case auth.ErrVerificationExpired:
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrVerificationExpired.Error()})
+		case auth.ErrVerificationNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": auth.ErrVerificationNotFound.Error()})
 		default:
 			return fiberInternalServerError(c)
 		}

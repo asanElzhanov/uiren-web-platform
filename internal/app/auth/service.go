@@ -15,6 +15,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+//go:generate mockgen -source service.go -destination service_mock.go -package auth
+
 type userService interface {
 	GetUserForLogin(ctx context.Context, indetifier string) (users.UserDTO, error)
 	CreateUser(ctx context.Context, params users.CreateUserDTO) (string, error)
@@ -77,9 +79,12 @@ func (s *AuthService) SignIn(ctx context.Context, params LoginParams) (string, s
 		return "", "", err
 	}
 
-	if !hasher.BcryptComparePasswordAndHash(params.Password, user.Password) {
+	if err := hasher.BcryptComparePasswordAndHash(params.Password, user.Password); err != nil {
 		logger.Error("AuthService.SignIn BcryptComparePasswordAndHash: ", err)
-		return "", "", ErrInvalidCredentials
+		if hasher.BcryptIsInvalidPasswordError(err) {
+			return "", "", ErrInvalidCredentials
+		}
+		return "", "", err
 	}
 
 	payload := jwt_maker.PayloadDTO{
@@ -172,7 +177,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, token string) (string, s
 	var payload jwt_maker.PayloadDTO
 	if err := json.Unmarshal([]byte(payloadJSON), &payload); err != nil {
 		logger.Error("AuthService.RefreshToken json.Unmarshal: ", err)
-		return "", "", ErrInvalidToken
+		return "", "", err
 	}
 
 	if err := s.redisClient.Delete(ctx, key); err != nil {
@@ -189,9 +194,10 @@ func (s *AuthService) generateTokens(ctx context.Context, payload jwt_maker.Payl
 		return "", "", err
 	}
 
-	refreshToken := generateAlphanumericCode(50)
+	refreshToken := ""
 
 	if s.redisClient != nil {
+		refreshToken = generateAlphanumericCode(50)
 		key := refreshTokenKey(refreshToken)
 
 		payloadJSON, err := json.Marshal(payload)

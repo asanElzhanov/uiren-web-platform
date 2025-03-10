@@ -2,8 +2,10 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -47,6 +49,9 @@ func (r *verificationRepository) getVerificationCode(ctx context.Context, userna
 	row := r.db.QueryRow(ctx, query, username)
 
 	if err := row.Scan(&response.Username, &response.Email, &response.Code, &response.ExpiresAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Verification{}, ErrVerificationNotFound
+		}
 		return Verification{}, err
 	}
 
