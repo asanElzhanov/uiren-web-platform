@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+//go:generate mockgen -source service.go -destination service_mock.go -package modules
+
 type repository interface {
 	createModule(ctx context.Context, dto CreateModuleDTO) (primitive.ObjectID, error)
 	updateModule(ctx context.Context, code string, dto UpdateModuleDTO) error
