@@ -132,12 +132,12 @@ func (app *App) SetHandlers() {
 	api.Get("/verify/:username/:code", app.verification)
 	api.Get("/refresh-token", app.refreshToken)
 	//users
-	usersApi := api.Group("/users", middleware.JWTMiddleware())
+	usersApi := api.Group("/users", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	usersApi.Get("/:id", app.getUser)
 	usersApi.Post("/", app.createUser)
 	usersApi.Patch("/:id", app.updateUser)
 	//modules
-	modulesApi := api.Group("/modules", middleware.JWTMiddleware())
+	modulesApi := api.Group("/modules", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	modulesApi.Get("/:code", app.getModule)
 	modulesApi.Post("/", app.createModule)
 	modulesApi.Delete("/:code", app.deleteModule)
@@ -145,7 +145,7 @@ func (app *App) SetHandlers() {
 	modulesApi.Post("/:code/lessons-list/:lessonCode", app.addLessonToList)
 	modulesApi.Delete("/:code/lessons-list/:lessonCode", app.deleteLessonFromList)
 	//lessons
-	lessonApi := api.Group("/lessons", middleware.JWTMiddleware())
+	lessonApi := api.Group("/lessons", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	lessonApi.Get("/:code", app.getLesson)
 	lessonApi.Post("/", app.createLesson)
 	lessonApi.Patch("/:code", app.updateLesson)
@@ -153,13 +153,13 @@ func (app *App) SetHandlers() {
 	lessonApi.Post(":code/exercises-list/:exerciseCode", app.addExerciseToList)
 	lessonApi.Delete(":code/exercises-list/:exerciseCode", app.deleteExerciseFromList)
 	//exercises
-	exerciseApi := api.Group("/exercises", middleware.JWTMiddleware())
+	exerciseApi := api.Group("/exercises", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	exerciseApi.Get("/:code", app.getExercise)
 	exerciseApi.Post("/", app.createExercise)
 	exerciseApi.Patch("/:code", app.updateExercise)
 	exerciseApi.Delete("/:code", app.deleteExercise)
 	//achievements
-	achievementsApi := api.Group("/achievements", middleware.JWTMiddleware())
+	achievementsApi := api.Group("/achievements", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	achievementsApi.Post("/", app.createAchievement)
 	achievementsApi.Patch("/", app.updateAchievement)
 	achievementsApi.Delete("/", app.deleteAchievement)
