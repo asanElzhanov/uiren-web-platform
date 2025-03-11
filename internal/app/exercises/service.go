@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+//go:generate mockgen -source service.go -destination service_mock.go -package exercises
+
 type repository interface {
 	getExercisesByCodes(ctx context.Context, codes []string) ([]Exercise, error)
 	getExercise(ctx context.Context, code string) (Exercise, error)
