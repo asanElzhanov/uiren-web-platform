@@ -7,6 +7,8 @@ import (
 	"uiren/pkg/logger"
 )
 
+//go:generate mockgen -source service.go -destination service_mock.go -package friendship
+
 type friendshipRepository interface {
 	createFriendshipStatus(ctx context.Context, req FriendshipRequestDTO) (Friendship, error)
 	changeFriendshipStatus(ctx context.Context, req FriendshipRequestDTO) (Friendship, error)
