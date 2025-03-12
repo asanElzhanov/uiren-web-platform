@@ -7,6 +7,8 @@ import (
 	"uiren/pkg/logger"
 )
 
+//go:generate mockgen -source service.go -destination service_mock.go -package users
+
 type repository interface {
 	createUser(ctx context.Context, params CreateUserDTO) (string, error)
 	getUserByUsername(ctx context.Context, username string) (UserDTO, error)
@@ -84,7 +86,7 @@ func (s *UserService) UpdateUser(ctx context.Context, dto UpdateUserDTO) (UserDT
 	updatedUser, err := s.repo.updateUser(ctx, dto)
 	if err != nil {
 		logger.Error("UserService.UpdateUser updateUser: ", err)
-		return UserDTO{}, nil
+		return UserDTO{}, err
 	}
 
 	return updatedUser, nil
