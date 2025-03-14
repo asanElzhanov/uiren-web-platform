@@ -5,11 +5,11 @@ import (
 	"slices"
 )
 
-type CreateModuleDTOMatcher struct {
+type CreateModuleWithLessonsMatcher struct {
 	expected CreateModuleDTO
 }
 
-func (m CreateModuleDTOMatcher) Matches(x interface{}) bool {
+func (m CreateModuleWithLessonsMatcher) Matches(x interface{}) bool {
 	dto, ok := x.(CreateModuleDTO)
 	if !ok {
 		return false
@@ -20,6 +20,6 @@ func (m CreateModuleDTOMatcher) Matches(x interface{}) bool {
 		slices.Equal(dto.Lessons, m.expected.Lessons)
 }
 
-func (m CreateModuleDTOMatcher) String() string {
-	return fmt.Sprintf("matches CreateModuleDTO (ignoring CreatedAt)")
+func (m CreateModuleWithLessonsMatcher) String() string {
+	return fmt.Sprintf("matches CreateModuleWithLessons (ignoring CreatedAt)")
 }

@@ -94,10 +94,10 @@ func (mr *MockrepositoryMockRecorder) deleteModule(ctx, code interface{}) *gomoc
 }
 
 // getModule mocks base method.
-func (m *Mockrepository) getModule(ctx context.Context, code string) (module, error) {
+func (m *Mockrepository) getModule(ctx context.Context, code string) (Module, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "getModule", ctx, code)
-	ret0, _ := ret[0].(module)
+	ret0, _ := ret[0].(Module)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

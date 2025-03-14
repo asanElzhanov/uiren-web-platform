@@ -5,7 +5,7 @@ import (
 	"uiren/internal/app/lessons"
 )
 
-type module struct {
+type Module struct {
 	Code        string             `bson:"code" json:"code"`
 	Title       string             `bson:"title" json:"title"`
 	Description string             `bson:"description" json:"description"`
@@ -18,7 +18,7 @@ type module struct {
 	DeletedAt   *time.Time         `bson:"deleted_at,omitempty" json:"deleted_at,omitempty"`
 }
 
-type ModuleDTO struct {
+type ModuleWithLessons struct {
 	Code        string
 	Title       string
 	Description string
@@ -31,12 +31,12 @@ type ModuleDTO struct {
 	DeletedAt   time.Time
 }
 
-func (module module) toDTO(lessons []lessons.LessonDTO) ModuleDTO {
+func (module Module) toDTO(lessons []lessons.LessonDTO) ModuleWithLessons {
 	var moduleDeletedAt time.Time
 	if module.DeletedAt != nil {
 		moduleDeletedAt = *module.DeletedAt
 	}
-	return ModuleDTO{
+	return ModuleWithLessons{
 		Code:        module.Code,
 		Title:       module.Title,
 		Description: module.Description,

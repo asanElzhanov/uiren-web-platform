@@ -32,7 +32,7 @@ func Test_ModulesService_CreateModule_success(t *testing.T) {
 		expectedID = primitive.NewObjectID()
 	)
 
-	repo.EXPECT().createModule(ctx, CreateModuleDTOMatcher{expected: dto}).Return(expectedID, nil)
+	repo.EXPECT().createModule(ctx, CreateModuleWithLessonsMatcher{expected: dto}).Return(expectedID, nil)
 
 	id, err := srv.CreateModule(ctx, dto)
 	assert.NoError(t, err)
@@ -50,7 +50,7 @@ func Test_ModulesService_CreateModule_fail(t *testing.T) {
 		dto            = CreateModuleDTO{Code: "module1"}
 	)
 
-	repo.EXPECT().createModule(ctx, CreateModuleDTOMatcher{expected: dto}).Return(primitive.NilObjectID, ErrCodeAlreadyExists)
+	repo.EXPECT().createModule(ctx, CreateModuleWithLessonsMatcher{expected: dto}).Return(primitive.NilObjectID, ErrCodeAlreadyExists)
 
 	id, err := srv.CreateModule(ctx, dto)
 	assert.Error(t, err)
@@ -223,7 +223,7 @@ func Test_ModulesService_GetModule_success(t *testing.T) {
 		lessonSrv = NewMocklessonsService(ctrl)
 		srv       = NewModulesService(repo, lessonSrv)
 		code      = "module1"
-		module    = module{
+		module    = Module{
 			Code:    code,
 			Title:   "Module 1",
 			Lessons: []string{"lesson1", "lesson2"},
@@ -254,11 +254,11 @@ func Test_ModulesService_GetModule_fail_repo(t *testing.T) {
 		code      = "module1"
 	)
 
-	repo.EXPECT().getModule(ctx, code).Return(module{}, ErrNotFound)
+	repo.EXPECT().getModule(ctx, code).Return(Module{}, ErrNotFound)
 
 	dto, err := srv.GetModule(ctx, code)
 	assert.Error(t, err)
-	assert.Equal(t, ModuleDTO{}, dto)
+	assert.Equal(t, ModuleWithLessons{}, dto)
 	assert.Equal(t, err, ErrNotFound)
 }
 
@@ -271,7 +271,7 @@ func Test_ModulesService_GetModule_fail_lessons(t *testing.T) {
 		lessonSrv = NewMocklessonsService(ctrl)
 		srv       = NewModulesService(repo, lessonSrv)
 		code      = "module1"
-		module    = module{
+		module    = Module{
 			Code:    code,
 			Title:   "Module 1",
 			Lessons: []string{"lesson1", "lesson2"},
@@ -283,5 +283,5 @@ func Test_ModulesService_GetModule_fail_lessons(t *testing.T) {
 
 	dto, err := srv.GetModule(ctx, code)
 	assert.Error(t, err)
-	assert.Equal(t, ModuleDTO{}, dto)
+	assert.Equal(t, ModuleWithLessons{}, dto)
 }

@@ -24,7 +24,7 @@ func fiberOK(c *fiber.Ctx) error {
 }
 
 type modulesService interface {
-	GetModule(ctx context.Context, code string) (modules.ModuleDTO, error)
+	GetModule(ctx context.Context, code string) (modules.ModuleWithLessons, error)
 	CreateModule(ctx context.Context, dto modules.CreateModuleDTO) (primitive.ObjectID, error)
 	DeleteModule(ctx context.Context, code string) error
 	UpdateModule(ctx context.Context, code string, dto modules.UpdateModuleDTO) error

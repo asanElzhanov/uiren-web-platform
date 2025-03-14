@@ -15,7 +15,7 @@ type repository interface {
 	createModule(ctx context.Context, dto CreateModuleDTO) (primitive.ObjectID, error)
 	updateModule(ctx context.Context, code string, dto UpdateModuleDTO) error
 	deleteModule(ctx context.Context, code string) error
-	getModule(ctx context.Context, code string) (module, error)
+	getModule(ctx context.Context, code string) (Module, error)
 	addLessonToList(ctx context.Context, code, lessonCode string) error
 	deleteLessonFromList(ctx context.Context, code, lessonCode string) error
 }
@@ -36,19 +36,19 @@ func NewModulesService(repo repository, lessonsService lessonsService) *ModulesS
 	}
 }
 
-func (s ModulesService) GetModule(ctx context.Context, code string) (ModuleDTO, error) {
+func (s ModulesService) GetModule(ctx context.Context, code string) (ModuleWithLessons, error) {
 	logger.Info("ModulesService.GetModule new request")
 
 	module, err := s.repo.getModule(ctx, code)
 	if err != nil {
 		logger.Error("ModulesService.GetModule s.modulesRepository.getModule: ", err)
-		return ModuleDTO{}, err
+		return ModuleWithLessons{}, err
 	}
 
 	lessonsList, err := s.lessonsService.GetLessonsByCodes(ctx, module.Lessons)
 	if err != nil {
 		logger.Error("ModulesService.GetModule s.lessonsRepository.GetLessons: ", err)
-		return ModuleDTO{}, err
+		return ModuleWithLessons{}, err
 	}
 
 	return module.toDTO(lessonsList), nil

@@ -25,23 +25,23 @@ func NewModulesRepository(db *mongo.Database) *modulesRepository {
 	}
 }
 
-func (r *modulesRepository) getModule(ctx context.Context, code string) (module, error) {
+func (r *modulesRepository) getModule(ctx context.Context, code string) (Module, error) {
 	var (
 		collection = r.db.Collection(modulesCollection)
 		filter     = bson.M{
 			"code":       code,
 			"deleted_at": nil,
 		}
-		response module
+		response Module
 	)
 
 	moduleEntity := collection.FindOne(ctx, filter)
 
 	if err := moduleEntity.Decode(&response); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return module{}, ErrNotFound
+			return Module{}, ErrNotFound
 		}
-		return module{}, err
+		return Module{}, err
 	}
 
 	return response, nil
