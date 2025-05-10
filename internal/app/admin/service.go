@@ -139,8 +139,8 @@ func (app *App) SetHandlers() {
 	api := app.appFiber.Group("/api")
 
 	//auth
-	api.Get("/sign-in", app.signIn)
-	api.Get("/register", app.register)
+	api.Post("/sign-in", app.signIn)
+	api.Post("/register", app.register)
 	api.Get("/verify/:username/:code", app.verification)
 	api.Get("/refresh-token", app.refreshToken)
 	//users
