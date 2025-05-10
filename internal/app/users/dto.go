@@ -7,6 +7,20 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserAchievement struct {
+	AchievementName  string `json:"ach_name"`
+	Level            int    `json:"lvl"`
+	LevelDescription string `json:"description"`
+	Progress         int    `json:"progress"`
+	Threshold        int    `json:"lvl_threshold"`
+}
+
+type UserProgress struct {
+	Badges       []string          `json:"badges"`
+	XP           int32             `json:"xp"`
+	Achievements []UserAchievement `json:"achievements"`
+}
+
 type user struct {
 	id        uuid.UUID
 	username  string

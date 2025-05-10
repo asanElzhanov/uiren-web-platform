@@ -4,6 +4,7 @@ import (
 	"context"
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/data"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/friendship"
 	"uiren/internal/app/lessons"
@@ -78,6 +79,12 @@ type friendshipService interface {
 	GetRequestList(ctx context.Context, username string) (friendship.FriendList, error)
 }
 
+type dataService interface {
+	GetUserWithoutProgress(ctx context.Context, username string) (data.UserInfo, error)
+	GetUserWithProgress(ctx context.Context, username string) (data.UserInfo, error)
+	GetModules(ctx context.Context) (data.ModulesList, error)
+}
+
 type App struct {
 	appFiber           *fiber.App
 	userService        userService
@@ -87,6 +94,7 @@ type App struct {
 	exerciseService    exerciseService
 	achievementService achievementService
 	friendshipService  friendshipService
+	dataService        dataService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -121,6 +129,10 @@ func (app *App) WithAchievementService(achievementService achievementService) {
 
 func (app *App) WithFriendshipService(friendshipService friendshipService) {
 	app.friendshipService = friendshipService
+}
+
+func (app *App) WithDataService(dataService dataService) {
+	app.dataService = dataService
 }
 
 func (app *App) SetHandlers() {
@@ -172,4 +184,8 @@ func (app *App) SetHandlers() {
 	friendsApi.Post("/handle-request", app.handleFriendRequest)
 	friendsApi.Get("/friend-list", app.getFriendList)
 	friendsApi.Get("/request-list", app.getRequestList)
+	//data
+	dataApi := api.Group("/data", middleware.JWTMiddleware())
+	dataApi.Get("/modules", app.mainPageModules)
+	dataApi.Get("/users", app.getUserInfo)
 }

@@ -18,13 +18,21 @@ type repository interface {
 	checkUserExists(ctx context.Context, username string) error
 }
 
-type UserService struct {
-	repo repository
+type userProgressRepo interface {
+	getBadges(ctx context.Context, id string) ([]string, error)
+	getXP(ctx context.Context, id string) (int, error)
+	getAchievements(ctx context.Context, id string) ([]UserAchievement, error)
 }
 
-func NewUserService(repo repository) *UserService {
+type UserService struct {
+	repo    repository
+	prgRepo userProgressRepo
+}
+
+func NewUserService(repo repository, prgRepo userProgressRepo) *UserService {
 	return &UserService{
-		repo: repo,
+		repo:    repo,
+		prgRepo: prgRepo,
 	}
 }
 
@@ -102,4 +110,47 @@ func (s *UserService) CheckUserExists(ctx context.Context, username string) erro
 	logger.Info("UserService.CheckUserExists new request")
 
 	return s.repo.checkUserExists(ctx, username)
+}
+
+// todo: write tests
+func (s *UserService) GetUserProgress(ctx context.Context, id string) (UserProgress, error) {
+	logger.Info("UserService.GetUserProgress new request")
+
+	badges, err := s.prgRepo.getBadges(ctx, id)
+	if err != nil {
+		logger.Error("UserService.GetUserProgress prgRepo.getBadges: ", err)
+		return UserProgress{}, err
+	}
+
+	xp, err := s.prgRepo.getXP(ctx, id)
+	if err != nil {
+		logger.Error("UserService.GetUserProgress prgRepo.getXp: ", err)
+		return UserProgress{}, err
+	}
+
+	achievementsList, err := s.prgRepo.getAchievements(ctx, id)
+	if err != nil {
+		logger.Error("UserService.GetUserProgress prgRepo.getAchievements: ", err)
+		return UserProgress{}, err
+	}
+
+	return UserProgress{
+		Badges:       badges,
+		XP:           int32(xp),
+		Achievements: achievementsList,
+	}, nil
+}
+
+// todo: write tests
+func (s *UserService) GetUserByUsername(ctx context.Context, username string) (UserDTO, error) {
+	logger.Info("UserService.GetUserByUsername new request")
+
+	user, err := s.repo.getUserByUsername(ctx, username)
+	if err != nil {
+		logger.Error("UserService.GetUserByUsername getUserByUsername: ", err)
+		return UserDTO{}, err
+	}
+
+	user.normalize()
+	return user, nil
 }

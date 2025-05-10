@@ -10,6 +10,7 @@ import (
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/admin"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/data"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/friendship"
 	"uiren/internal/app/lessons"
@@ -132,7 +133,8 @@ func main() {
 	achievementService := achievements.NewAchievementService(achievementRepo)
 
 	userRepo := users.NewUserRepository(postgresDB)
-	userService := users.NewUserService(userRepo)
+	userProgressRepo := users.NewUserProgressRepository(postgresDB)
+	userService := users.NewUserService(userRepo, userProgressRepo)
 
 	friendshipRepo := friendship.NewFriendshipRepository(postgresDB)
 	friendshipService := friendship.NewFriendshipService(friendshipRepo, userService)
@@ -143,6 +145,8 @@ func main() {
 	authService.WithRedisClient(redisDB)
 	authService.SetRefreshTokenTTL(config.GetValue(refreshTokenDuration).Duration())
 
+	dataService := data.NewDataService(redisDB, userService, modulesService, config.GetValue(dbRedisDataTTLKey).Duration())
+
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)
 	appService.WithAuthService(authService)
@@ -151,6 +155,7 @@ func main() {
 	appService.WithExerciseService(exerciseService)
 	appService.WithAchievementService(achievementService)
 	appService.WithFriendshipService(friendshipService)
+	appService.WithDataService(dataService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

@@ -108,6 +108,21 @@ func (mr *MockrepositoryMockRecorder) getModule(ctx, code interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getModule", reflect.TypeOf((*Mockrepository)(nil).getModule), ctx, code)
 }
 
+// getModules mocks base method.
+func (m *Mockrepository) getModules(ctx context.Context) ([]Module, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getModules", ctx)
+	ret0, _ := ret[0].([]Module)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getModules indicates an expected call of getModules.
+func (mr *MockrepositoryMockRecorder) getModules(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getModules", reflect.TypeOf((*Mockrepository)(nil).getModules), ctx)
+}
+
 // updateModule mocks base method.
 func (m *Mockrepository) updateModule(ctx context.Context, code string, dto UpdateModuleDTO) error {
 	m.ctrl.T.Helper()

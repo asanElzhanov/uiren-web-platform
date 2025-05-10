@@ -182,3 +182,29 @@ func (r *modulesRepository) deleteLessonFromList(ctx context.Context, code, less
 
 	return nil
 }
+
+func (r *modulesRepository) getModules(ctx context.Context) ([]Module, error) {
+	var (
+		collection = r.db.Collection(modulesCollection)
+		filter     = bson.M{"deleted_at": nil}
+		result     []Module
+	)
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		var module Module
+
+		if err = cur.Decode(&module); err != nil {
+			return nil, err
+		}
+
+		result = append(result, module)
+	}
+
+	return result, nil
+}

@@ -2,15 +2,6 @@ package admin
 
 // users
 type (
-	User struct {
-		ID        string `json:"id"`
-		Username  string `json:"username"`
-		Firstname string `json:"firstname"`
-		Lastname  string `json:"lastname"`
-		Email     string `json:"email"`
-		Phone     string `json:"phone"`
-	}
-
 	CreateUserReq struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
