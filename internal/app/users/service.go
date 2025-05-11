@@ -16,6 +16,8 @@ type repository interface {
 	updateUser(ctx context.Context, dto UpdateUserDTO) (UserDTO, error)
 	enableUser(ctx context.Context, username string) error
 	checkUserExists(ctx context.Context, username string) error
+	getAllUsers(ctx context.Context) ([]UserDTO, error)
+	getUserByID(ctx context.Context, id string) (UserDTO, error)
 }
 
 type userProgressRepo interface {
@@ -151,6 +153,37 @@ func (s *UserService) GetUserByUsername(ctx context.Context, username string) (U
 		return UserDTO{}, err
 	}
 
+	user.normalize()
+	return user, nil
+}
+
+// todo: write tests
+func (s *UserService) GetAllUsers(ctx context.Context) ([]UserDTO, error) {
+	logger.Info("UserService.GetUsers new request")
+
+	users, err := s.repo.getAllUsers(ctx)
+	if err != nil {
+		logger.Error("UserService.GetUsers getUsers: ", err)
+		return nil, err
+	}
+
+	for i := range users {
+		users[i].normalize()
+		users[i].Password = "..."
+	}
+
+	return users, nil
+}
+
+//todo: write tests
+
+func (s *UserService) GetUserByID(ctx context.Context, id string) (UserDTO, error) {
+	logger.Info("UserService.GetUserByID new request")
+	user, err := s.repo.getUserByID(ctx, id)
+	if err != nil {
+		logger.Error("UserService.GetUserByID getUserByID: ", err)
+		return UserDTO{}, err
+	}
 	user.normalize()
 	return user, nil
 }

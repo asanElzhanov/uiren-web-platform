@@ -19,7 +19,7 @@ type repository interface {
 	addLessonToList(ctx context.Context, code, lessonCode string) error
 	deleteLessonFromList(ctx context.Context, code, lessonCode string) error
 
-	getModules(ctx context.Context) ([]Module, error)
+	getAllModules(ctx context.Context) ([]Module, error)
 }
 
 type lessonsService interface {
@@ -119,6 +119,6 @@ func (s ModulesService) DeleteLessonFromList(ctx context.Context, code, lessonCo
 
 func (s ModulesService) GetModulesList(ctx context.Context) ([]Module, error) {
 	logger.Info("ModulesService.GetModules new request")
-
-	return s.repo.getModules(ctx)
+	// todo: change to func with pagination
+	return s.repo.getAllModules(ctx)
 }

@@ -63,6 +63,8 @@ type userService interface {
 	CreateUser(ctx context.Context, params users.CreateUserDTO) (string, error)
 	GetUserForLogin(ctx context.Context, username string) (users.UserDTO, error)
 	UpdateUser(ctx context.Context, dto users.UpdateUserDTO) (users.UserDTO, error)
+	GetAllUsers(ctx context.Context) ([]users.UserDTO, error)
+	GetUserByID(ctx context.Context, id string) (users.UserDTO, error)
 }
 
 type authService interface {
@@ -148,6 +150,7 @@ func (app *App) SetHandlers() {
 	usersApi.Get("/:id", app.getUser)
 	usersApi.Post("/", app.createUser)
 	usersApi.Patch("/:id", app.updateUser)
+	usersApi.Get("/", app.getAllUsers)
 	//modules
 	modulesApi := api.Group("/modules", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	modulesApi.Get("/:code", app.getModule)

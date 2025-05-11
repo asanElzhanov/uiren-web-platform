@@ -93,6 +93,21 @@ func (mr *MockrepositoryMockRecorder) deleteModule(ctx, code interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteModule", reflect.TypeOf((*Mockrepository)(nil).deleteModule), ctx, code)
 }
 
+// getAllModules mocks base method.
+func (m *Mockrepository) getAllModules(ctx context.Context) ([]Module, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getAllModules", ctx)
+	ret0, _ := ret[0].([]Module)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllModules indicates an expected call of getAllModules.
+func (mr *MockrepositoryMockRecorder) getAllModules(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllModules", reflect.TypeOf((*Mockrepository)(nil).getAllModules), ctx)
+}
+
 // getModule mocks base method.
 func (m *Mockrepository) getModule(ctx context.Context, code string) (Module, error) {
 	m.ctrl.T.Helper()
@@ -106,21 +121,6 @@ func (m *Mockrepository) getModule(ctx context.Context, code string) (Module, er
 func (mr *MockrepositoryMockRecorder) getModule(ctx, code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getModule", reflect.TypeOf((*Mockrepository)(nil).getModule), ctx, code)
-}
-
-// getModules mocks base method.
-func (m *Mockrepository) getModules(ctx context.Context) ([]Module, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getModules", ctx)
-	ret0, _ := ret[0].([]Module)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// getModules indicates an expected call of getModules.
-func (mr *MockrepositoryMockRecorder) getModules(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getModules", reflect.TypeOf((*Mockrepository)(nil).getModules), ctx)
 }
 
 // updateModule mocks base method.

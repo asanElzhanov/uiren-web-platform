@@ -77,6 +77,21 @@ func (mr *MockrepositoryMockRecorder) enableUser(ctx, username interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "enableUser", reflect.TypeOf((*Mockrepository)(nil).enableUser), ctx, username)
 }
 
+// getAllUsers mocks base method.
+func (m *Mockrepository) getAllUsers(ctx context.Context) ([]UserDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getAllUsers", ctx)
+	ret0, _ := ret[0].([]UserDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllUsers indicates an expected call of getAllUsers.
+func (mr *MockrepositoryMockRecorder) getAllUsers(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllUsers", reflect.TypeOf((*Mockrepository)(nil).getAllUsers), ctx)
+}
+
 // getUserByEmail mocks base method.
 func (m *Mockrepository) getUserByEmail(ctx context.Context, email string) (UserDTO, error) {
 	m.ctrl.T.Helper()
@@ -90,6 +105,21 @@ func (m *Mockrepository) getUserByEmail(ctx context.Context, email string) (User
 func (mr *MockrepositoryMockRecorder) getUserByEmail(ctx, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getUserByEmail", reflect.TypeOf((*Mockrepository)(nil).getUserByEmail), ctx, email)
+}
+
+// getUserByID mocks base method.
+func (m *Mockrepository) getUserByID(ctx context.Context, id string) (UserDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getUserByID", ctx, id)
+	ret0, _ := ret[0].(UserDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getUserByID indicates an expected call of getUserByID.
+func (mr *MockrepositoryMockRecorder) getUserByID(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getUserByID", reflect.TypeOf((*Mockrepository)(nil).getUserByID), ctx, id)
 }
 
 // getUserByUsername mocks base method.

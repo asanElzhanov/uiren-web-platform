@@ -183,7 +183,7 @@ func (r *modulesRepository) deleteLessonFromList(ctx context.Context, code, less
 	return nil
 }
 
-func (r *modulesRepository) getModules(ctx context.Context) ([]Module, error) {
+func (r *modulesRepository) getAllModules(ctx context.Context) ([]Module, error) {
 	var (
 		collection = r.db.Collection(modulesCollection)
 		filter     = bson.M{"deleted_at": nil}
