@@ -22,6 +22,10 @@ type (
 		Identificator string `json:"identificator"`
 		Password      string `json:"password"`
 	}
+
+	RefreshTokenParams struct {
+		Token string `json:"refresh_token"`
+	}
 )
 
 // achievements

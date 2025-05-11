@@ -142,7 +142,7 @@ func (app *App) SetHandlers() {
 	api.Post("/sign-in", app.signIn)
 	api.Post("/register", app.register)
 	api.Get("/verify/:username/:code", app.verification)
-	api.Get("/refresh-token", app.refreshToken)
+	api.Post("/refresh-token", app.refreshToken)
 	//users
 	usersApi := api.Group("/users", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	usersApi.Get("/:id", app.getUser)

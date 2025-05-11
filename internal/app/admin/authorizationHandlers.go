@@ -101,14 +101,18 @@ func (app *App) verification(c *fiber.Ctx) error {
 func (app *App) refreshToken(c *fiber.Ctx) error {
 	var (
 		ctx = c.Context()
-		req = c.Query("refresh_token")
+		req RefreshTokenParams
 	)
 
-	if req == "" {
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("app.refreshToken BodyParser: ", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest})
+	}
+	if req.Token == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "refresh_token required"})
 	}
 
-	accessToken, refreshToken, err := app.authService.RefreshToken(ctx, req)
+	accessToken, refreshToken, err := app.authService.RefreshToken(ctx, req.Token)
 	if err != nil {
 		logger.Error("app.refreshToken error: ", err)
 		switch err {
