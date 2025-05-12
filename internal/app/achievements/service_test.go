@@ -26,7 +26,7 @@ func Test_achievementService_CreateAchievement_success(t *testing.T) {
 		response        = AchievementDTO{
 			ID:     1,
 			Name:   req,
-			Levels: []AchievementLevelDTO{},
+			Levels: []AchievementLevel{},
 		}
 	)
 	defer ctrl.Finish()
@@ -167,7 +167,7 @@ func Test_achievementService_GetAchievement_Success(t *testing.T) {
 			createdAt: time.Now(),
 		}
 
-		levels = []achievementLevel{
+		levels = []AchievementLevel{
 			{
 				achID:       1,
 				achName:     "some_name",
@@ -193,7 +193,7 @@ func Test_achievementService_GetAchievement_Success(t *testing.T) {
 				createdAt:   time.Now(),
 			},
 		}
-		levelsDTO = []AchievementLevelDTO{levels[0].toDTO(), levels[1].toDTO(), levels[2].toDTO()}
+		levelsDTO = []AchievementLevel{levels[0], levels[1], levels[2]}
 		response  = info.toDTO(levelsDTO)
 	)
 	defer ctrl.Finish()
@@ -269,7 +269,7 @@ func Test_achievementService_GetAchievement_getLevelsByAchievementID_emptyLevels
 			name:      "some_name",
 			createdAt: time.Now(),
 		}
-		levelsDTO = []AchievementLevelDTO{}
+		levelsDTO = []AchievementLevel{}
 		response  = info.toDTO(levelsDTO)
 	)
 	defer ctrl.Finish()
@@ -594,4 +594,65 @@ func Test_achievementService_DeleteAchievementLevel_RepoFailed_deleteLevel_rollb
 	err := service.DeleteAchievementLevel(ctx, req)
 
 	assert.ErrorIs(t, err, errDelete)
+}
+
+func Test_achievementService_GetLevel_success(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx             = context.TODO()
+		ctrl            = gomock.NewController(t)
+		achievementRepo = NewMockachievementRepo(ctrl)
+		service         = NewAchievementService(achievementRepo)
+
+		req = struct {
+			AchID int
+			Level int
+		}{
+			AchID: 1,
+			Level: 1,
+		}
+		level = AchievementLevel{
+			achID:       1,
+			achName:     "some_name",
+			level:       1,
+			description: "some_description",
+		}
+		response = level
+	)
+	defer ctrl.Finish()
+
+	achievementRepo.EXPECT().getLevel(ctx, req.AchID, req.Level).Return(level, nil)
+
+	result, err := service.GetLevel(ctx, req.AchID, req.Level)
+
+	assert.NoError(t, err)
+	assert.Equal(t, response, result)
+}
+
+func Test_achievementService_GetLevel_repoFailed(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx             = context.TODO()
+		ctrl            = gomock.NewController(t)
+		achievementRepo = NewMockachievementRepo(ctrl)
+		service         = NewAchievementService(achievementRepo)
+
+		req = struct {
+			AchID int
+			Level int
+		}{
+			AchID: 1,
+			Level: 1,
+		}
+		response = AchievementLevel{}
+	)
+	defer ctrl.Finish()
+
+	achievementRepo.EXPECT().getLevel(ctx, req.AchID, req.Level).Return(AchievementLevel{}, ErrAchievementLevelNotFound)
+
+	result, err := service.GetLevel(ctx, req.AchID, req.Level)
+
+	assert.Error(t, err)
+	assert.Equal(t, ErrAchievementLevelNotFound, err)
+	assert.Equal(t, response, result)
 }

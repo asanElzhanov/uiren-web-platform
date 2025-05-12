@@ -151,11 +151,26 @@ func (mr *MockachievementRepoMockRecorder) getLastLevelAndTreshold(ctx, achID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getLastLevelAndTreshold", reflect.TypeOf((*MockachievementRepo)(nil).getLastLevelAndTreshold), ctx, achID)
 }
 
+// getLevel mocks base method.
+func (m *MockachievementRepo) getLevel(ctx context.Context, achID, level int) (AchievementLevel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getLevel", ctx, achID, level)
+	ret0, _ := ret[0].(AchievementLevel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getLevel indicates an expected call of getLevel.
+func (mr *MockachievementRepoMockRecorder) getLevel(ctx, achID, level interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getLevel", reflect.TypeOf((*MockachievementRepo)(nil).getLevel), ctx, achID, level)
+}
+
 // getLevelsByAchievementID mocks base method.
-func (m *MockachievementRepo) getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevelDTO, error) {
+func (m *MockachievementRepo) getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "getLevelsByAchievementID", ctx, achID)
-	ret0, _ := ret[0].([]AchievementLevelDTO)
+	ret0, _ := ret[0].([]AchievementLevel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

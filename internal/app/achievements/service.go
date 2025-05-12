@@ -17,7 +17,8 @@ type achievementRepo interface {
 
 	beginTransaction(ctx context.Context) (transaction, error)
 
-	getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevelDTO, error)
+	getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevel, error)
+	getLevel(ctx context.Context, achID, level int) (AchievementLevel, error)
 	getLastLevelAndTreshold(ctx context.Context, achID int) (LevelData, error)
 	addLevel(ctx context.Context, dto AddAchievementLevelDTO) error
 	deleteLevel(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error
@@ -49,7 +50,7 @@ func (s AchievementService) CreateAchievement(ctx context.Context, name string) 
 		return AchievementDTO{}, err
 	}
 
-	emptyLevelsList := []AchievementLevelDTO{}
+	emptyLevelsList := []AchievementLevel{}
 	return achievement.toDTO(emptyLevelsList), nil
 }
 
@@ -150,4 +151,16 @@ func (s AchievementService) DeleteAchievementLevel(ctx context.Context, dto Dele
 
 	commited = true
 	return nil
+}
+
+func (s AchievementService) GetLevel(ctx context.Context, achID, level int) (AchievementLevel, error) {
+	logger.Info("AchievementService.GetLevel new request")
+
+	achievementLevel, err := s.achievementRepo.getLevel(ctx, achID, level)
+	if err != nil {
+		logger.Error("AchievementService.GetLevel achievementRepo.getLevel: ", err)
+		return AchievementLevel{}, err
+	}
+
+	return achievementLevel, nil
 }

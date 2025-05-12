@@ -15,13 +15,13 @@ type achievement struct {
 type AchievementDTO struct {
 	ID        int
 	Name      string
-	Levels    []AchievementLevelDTO
+	Levels    []AchievementLevel
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 }
 
-func (ach achievement) toDTO(levels []AchievementLevelDTO) AchievementDTO {
+func (ach achievement) toDTO(levels []AchievementLevel) AchievementDTO {
 	return AchievementDTO{
 		ID:        ach.id,
 		Name:      ach.name,
@@ -32,7 +32,7 @@ func (ach achievement) toDTO(levels []AchievementLevelDTO) AchievementDTO {
 	}
 }
 
-type achievementLevel struct {
+type AchievementLevel struct {
 	achID       int
 	achName     string
 	level       int
@@ -40,31 +40,6 @@ type achievementLevel struct {
 	threshold   int
 	createdAt   time.Time
 	updatedAt   time.Time
-	deletedAt   *time.Time
-}
-
-type AchievementLevelDTO struct {
-	AchID       int
-	AchName     string
-	Level       int
-	Description string
-	Threshold   int
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   *time.Time
-}
-
-func (level achievementLevel) toDTO() AchievementLevelDTO {
-	return AchievementLevelDTO{
-		AchID:       level.achID,
-		AchName:     level.achName,
-		Level:       level.level,
-		Description: level.description,
-		Threshold:   level.threshold,
-		CreatedAt:   level.createdAt,
-		UpdatedAt:   level.updatedAt,
-		DeletedAt:   level.deletedAt,
-	}
 }
 
 type LevelData struct {

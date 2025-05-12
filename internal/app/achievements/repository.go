@@ -149,7 +149,7 @@ func (r *achievementRepository) deleteAchievement(ctx context.Context, id int) e
 	return nil
 }
 
-func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevelDTO, error) {
+func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, achID int) ([]AchievementLevel, error) {
 	var (
 		query = `
 		SELECT
@@ -169,7 +169,7 @@ func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, ac
 			AND ach.deleted_at IS NULL
 			AND l.deleted_at IS NULL;
 		`
-		response []AchievementLevelDTO
+		response []AchievementLevel
 	)
 
 	rows, err := r.db.Query(ctx, query, achID)
@@ -179,7 +179,7 @@ func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, ac
 	defer rows.Close()
 
 	for rows.Next() {
-		var level achievementLevel
+		var level AchievementLevel
 		if err := rows.Scan(
 			&level.achID,
 			&level.achName,
@@ -192,7 +192,7 @@ func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, ac
 			return nil, err
 		}
 
-		response = append(response, level.toDTO())
+		response = append(response, level)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -282,4 +282,44 @@ func (r *achievementRepository) decrementUpperLevels(ctx context.Context, tx tra
 
 	_, err := tx.Exec(ctx, query, dto.AchID, dto.Level)
 	return err
+}
+
+func (r *achievementRepository) getLevel(ctx context.Context, achID, level int) (AchievementLevel, error) {
+	var (
+		query = `
+		SELECT
+			ach.id,
+			ach.name, 
+			l.level, 
+			l.description, 
+			l.threshold, 
+			l.created_at, 
+			l.updated_at
+		FROM
+			achievements_levels l
+		INNER JOIN
+			achievements ach ON (l.achievement_id = ach.id)
+		WHERE
+			ach.id = $1
+			AND l.level = $2
+			AND ach.deleted_at IS NULL;
+		`
+		result AchievementLevel
+	)
+
+	if err := r.db.QueryRow(ctx, query, achID, level).Scan(
+		&result.achID,
+		&result.achName,
+		&result.level,
+		&result.description,
+		&result.threshold,
+		&result.createdAt,
+		&result.updatedAt,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return AchievementLevel{}, ErrAchievementLevelNotFound
+		}
+		return AchievementLevel{}, err
+	}
+	return result, nil
 }
