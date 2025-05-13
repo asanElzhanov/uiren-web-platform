@@ -24,6 +24,7 @@ import (
 	"uiren/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -55,6 +56,11 @@ var (
 
 func main() {
 	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173", AllowMethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH", // PATCH указан
+		AllowHeaders: "Content-Type,Authorization", AllowCredentials: true,
+	}))
+
 	err := logger.InitLogger(config.GetValue(appLogLevel).String())
 	if err != nil {
 		fmt.Println(err)
