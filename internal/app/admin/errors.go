@@ -79,9 +79,10 @@ var (
 )
 
 var (
-	ErrInvalidReward       = errors.New("invalid reward")
-	ErrInvalidRequirements = errors.New("invalid requirements")
-	ErrInvalidPairs        = errors.New("invalid pairs")
-	ErrInvalidType         = errors.New("invalid type")
-	ErrInvalidCode         = errors.New("invalid code")
+	ErrInvalidReward              = errors.New("invalid reward")
+	ErrInvalidRequirements        = errors.New("invalid requirements")
+	ErrInvalidPairs               = errors.New("invalid pairs")
+	ErrInvalidType                = errors.New("invalid type")
+	ErrInvalidCode                = errors.New("invalid code")
+	ErrInvalidAchievementProgress = errors.New("invalid achievement progress")
 )

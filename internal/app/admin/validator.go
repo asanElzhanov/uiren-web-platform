@@ -47,6 +47,41 @@ func isValidType(value interface{}, expectedType string) bool {
 	}
 }
 
+// progress
+
+func validateAchievementProgress(rawData map[string]interface{}) error {
+	value, exists := rawData["achievements_progress"]
+	if !exists {
+		return nil
+	}
+
+	list, ok := value.([]interface{})
+	if !ok {
+		return ErrInvalidAchievementProgress
+	}
+
+	for _, item := range list {
+		progress, ok := item.(map[string]interface{})
+		if !ok {
+			return ErrInvalidAchievementProgress
+		}
+
+		requiredFields := map[string]string{
+			"achievement_id":  "float64",
+			"earned_progress": "float64",
+		}
+
+		for field, expectedType := range requiredFields {
+			val, exists := progress[field]
+			if !exists || !isValidType(val, expectedType) {
+				return ErrInvalidAchievementProgress
+			}
+		}
+	}
+
+	return nil
+}
+
 // modules
 func validateRewardsAndRequirements(rawData map[string]interface{}) error {
 	if err := validateObjectKeys(rawData, "reward", map[string]string{

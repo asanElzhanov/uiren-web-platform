@@ -9,6 +9,7 @@ import (
 	"uiren/internal/app/friendship"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
+	"uiren/internal/app/progress"
 	"uiren/internal/app/users"
 	"uiren/internal/infrastracture/middleware"
 
@@ -87,6 +88,11 @@ type dataService interface {
 	GetModules(ctx context.Context) (data.ModulesList, error)
 }
 
+type progressService interface {
+	UpdateUserProgress(ctx context.Context, req progress.UpdateUserProgressRequest) error
+	RegisterNewBadge(ctx context.Context, req progress.InsertBadgeRequest) error
+}
+
 type App struct {
 	appFiber           *fiber.App
 	userService        userService
@@ -97,6 +103,7 @@ type App struct {
 	achievementService achievementService
 	friendshipService  friendshipService
 	dataService        dataService
+	progressService    progressService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -135,6 +142,10 @@ func (app *App) WithFriendshipService(friendshipService friendshipService) {
 
 func (app *App) WithDataService(dataService dataService) {
 	app.dataService = dataService
+}
+
+func (app *App) WithProgressService(progressService progressService) {
+	app.progressService = progressService
 }
 
 func (app *App) SetHandlers() {
@@ -191,4 +202,8 @@ func (app *App) SetHandlers() {
 	dataApi := api.Group("/data", middleware.JWTMiddleware())
 	dataApi.Get("/modules", app.mainPageModules)
 	dataApi.Get("/users", app.getUserInfo)
+	//progress
+	progressApi := api.Group("/progress", middleware.JWTMiddleware())
+	progressApi.Patch("/", app.updateProgress)
+	progressApi.Post("/badge", app.registerBadge)
 }

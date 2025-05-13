@@ -167,7 +167,8 @@ func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, ac
 		WHERE 
 			ach.id = $1
 			AND ach.deleted_at IS NULL
-			AND l.deleted_at IS NULL;
+			AND l.deleted_at IS NULL
+		ORDER BY l.level;
 		`
 		response []AchievementLevel
 	)
@@ -181,13 +182,13 @@ func (r *achievementRepository) getLevelsByAchievementID(ctx context.Context, ac
 	for rows.Next() {
 		var level AchievementLevel
 		if err := rows.Scan(
-			&level.achID,
-			&level.achName,
-			&level.level,
-			&level.description,
-			&level.threshold,
-			&level.createdAt,
-			&level.updatedAt,
+			&level.AchID,
+			&level.AchName,
+			&level.Level,
+			&level.Description,
+			&level.Threshold,
+			&level.CreatedAt,
+			&level.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -247,6 +248,7 @@ func (r *achievementRepository) addLevel(ctx context.Context, dto AddAchievement
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return ErrLevelExists
 		}
+		return err
 	}
 	return nil
 }
@@ -308,13 +310,13 @@ func (r *achievementRepository) getLevel(ctx context.Context, achID, level int) 
 	)
 
 	if err := r.db.QueryRow(ctx, query, achID, level).Scan(
-		&result.achID,
-		&result.achName,
-		&result.level,
-		&result.description,
-		&result.threshold,
-		&result.createdAt,
-		&result.updatedAt,
+		&result.AchID,
+		&result.AchName,
+		&result.Level,
+		&result.Description,
+		&result.Threshold,
+		&result.CreatedAt,
+		&result.UpdatedAt,
 	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return AchievementLevel{}, ErrAchievementLevelNotFound

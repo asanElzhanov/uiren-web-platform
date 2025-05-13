@@ -3,22 +3,15 @@ package users
 import (
 	"database/sql"
 	"time"
+	"uiren/internal/app/progress"
 
 	"github.com/google/uuid"
 )
 
-type UserAchievement struct {
-	AchievementName  string `json:"ach_name"`
-	Level            int    `json:"lvl"`
-	LevelDescription string `json:"description"`
-	Progress         int    `json:"progress"`
-	Threshold        int    `json:"lvl_threshold"`
-}
-
 type UserProgress struct {
-	Badges       []string          `json:"badges"`
-	XP           int32             `json:"xp"`
-	Achievements []UserAchievement `json:"achievements"`
+	Badges       []string                   `json:"badges"`
+	XP           int32                      `json:"xp"`
+	Achievements []progress.UserAchievement `json:"achievements"`
 }
 
 type user struct {

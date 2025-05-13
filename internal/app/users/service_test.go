@@ -21,7 +21,7 @@ func Test_userService_CreateUser_success(t *testing.T) {
 		ctx    = context.TODO()
 		ctrl   = gomock.NewController(t)
 		repo   = NewMockrepository(ctrl)
-		srv    = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv    = NewUserService(repo, NewMockProgressService(ctrl))
 		params = CreateUserDTO{
 			Username: "user9871",
 			Email:    "asan@gmail.com    ",
@@ -45,7 +45,7 @@ func Test_userService_CreateUser_fail(t *testing.T) {
 		ctx  = context.TODO()
 		ctrl = gomock.NewController(t)
 		repo = NewMockrepository(ctrl)
-		srv  = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv  = NewUserService(repo, NewMockProgressService(ctrl))
 	)
 	/*
 		normalizedParams := params
@@ -162,7 +162,7 @@ func Test_userService_UpdateUser_success(t *testing.T) {
 		ctx    = context.TODO()
 		ctrl   = gomock.NewController(t)
 		repo   = NewMockrepository(ctrl)
-		srv    = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv    = NewUserService(repo, NewMockProgressService(ctrl))
 		params = UpdateUserDTO{
 			Firstname:   "first",
 			Lastname:    "last",
@@ -183,7 +183,7 @@ func Test_userService_UpdateUser_fail(t *testing.T) {
 		ctx  = context.TODO()
 		ctrl = gomock.NewController(t)
 		repo = NewMockrepository(ctrl)
-		srv  = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv  = NewUserService(repo, NewMockProgressService(ctrl))
 	)
 
 	t.Run("wrong phone number", func(t *testing.T) {
@@ -230,7 +230,7 @@ func Test_userService_GetUserForLogin_success(t *testing.T) {
 		ctx         = context.TODO()
 		ctrl        = gomock.NewController(t)
 		repo        = NewMockrepository(ctrl)
-		srv         = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv         = NewUserService(repo, NewMockProgressService(ctrl))
 		reqUsername = "username1"
 		reqEmail    = "email@email.ru"
 		repoResp    = UserDTO{
@@ -263,7 +263,7 @@ func Test_userService_GetUserForLogin_repoFailed(t *testing.T) {
 		ctx        = context.TODO()
 		ctrl       = gomock.NewController(t)
 		repo       = NewMockrepository(ctrl)
-		srv        = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv        = NewUserService(repo, NewMockProgressService(ctrl))
 		identifier = "user1"
 		repoError  = errors.New("repo error")
 	)
@@ -287,7 +287,7 @@ func Test_UserService_EnableUser_Success(t *testing.T) {
 		ctx      = context.TODO()
 		ctrl     = gomock.NewController(t)
 		repo     = NewMockrepository(ctrl)
-		srv      = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv      = NewUserService(repo, NewMockProgressService(ctrl))
 		username = "test_user"
 	)
 
@@ -303,7 +303,7 @@ func Test_UserService_EnableUser_Fail(t *testing.T) {
 		ctx      = context.TODO()
 		ctrl     = gomock.NewController(t)
 		repo     = NewMockrepository(ctrl)
-		srv      = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv      = NewUserService(repo, NewMockProgressService(ctrl))
 		username = "test_user"
 	)
 
@@ -320,7 +320,7 @@ func Test_UserService_CheckUserExists_Success(t *testing.T) {
 		ctx      = context.TODO()
 		ctrl     = gomock.NewController(t)
 		repo     = NewMockrepository(ctrl)
-		srv      = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv      = NewUserService(repo, NewMockProgressService(ctrl))
 		username = "test_user"
 	)
 
@@ -336,7 +336,7 @@ func Test_UserService_CheckUserExists_Fail(t *testing.T) {
 		ctx      = context.TODO()
 		ctrl     = gomock.NewController(t)
 		repo     = NewMockrepository(ctrl)
-		srv      = NewUserService(repo, NewMockuserProgressRepo(ctrl))
+		srv      = NewUserService(repo, NewMockProgressService(ctrl))
 		username = "test_user"
 	)
 

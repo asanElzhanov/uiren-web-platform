@@ -15,6 +15,7 @@ import (
 	"uiren/internal/app/friendship"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
+	"uiren/internal/app/progress"
 	"uiren/internal/app/users"
 	"uiren/internal/infrastracture/database"
 	jwt_maker "uiren/internal/infrastracture/jwt"
@@ -132,9 +133,12 @@ func main() {
 	achievementRepo := achievements.NewAchievementRepository(postgresDB)
 	achievementService := achievements.NewAchievementService(achievementRepo)
 
+	progressReceiverRepo := progress.NewProgressReceiverRepository(postgresDB)
+	progressUpdaterRepo := progress.NewProgressUpdaterRepository(postgresDB)
+	progressService := progress.NewProgressService(progressReceiverRepo, progressUpdaterRepo, achievementService)
+
 	userRepo := users.NewUserRepository(postgresDB)
-	userProgressRepo := users.NewUserProgressRepository(postgresDB)
-	userService := users.NewUserService(userRepo, userProgressRepo)
+	userService := users.NewUserService(userRepo, progressService)
 
 	friendshipRepo := friendship.NewFriendshipRepository(postgresDB)
 	friendshipService := friendship.NewFriendshipService(friendshipRepo, userService)
@@ -156,6 +160,7 @@ func main() {
 	appService.WithAchievementService(achievementService)
 	appService.WithFriendshipService(friendshipService)
 	appService.WithDataService(dataService)
+	appService.WithProgressService(progressService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

@@ -169,28 +169,28 @@ func Test_achievementService_GetAchievement_Success(t *testing.T) {
 
 		levels = []AchievementLevel{
 			{
-				achID:       1,
-				achName:     "some_name",
-				level:       1,
-				description: "some_description",
-				threshold:   1,
-				createdAt:   time.Now(),
+				AchID:       1,
+				AchName:     "some_name",
+				Level:       1,
+				Description: "some_description",
+				Threshold:   1,
+				CreatedAt:   time.Now(),
 			},
 			{
-				achID:       1,
-				achName:     "some_name",
-				level:       2,
-				description: "some_description",
-				threshold:   2,
-				createdAt:   time.Now(),
+				AchID:       1,
+				AchName:     "some_name",
+				Level:       2,
+				Description: "some_description",
+				Threshold:   2,
+				CreatedAt:   time.Now(),
 			},
 			{
-				achID:       1,
-				achName:     "some_name",
-				level:       3,
-				description: "some_description",
-				threshold:   3,
-				createdAt:   time.Now(),
+				AchID:       1,
+				AchName:     "some_name",
+				Level:       3,
+				Description: "some_description",
+				Threshold:   3,
+				CreatedAt:   time.Now(),
 			},
 		}
 		levelsDTO = []AchievementLevel{levels[0], levels[1], levels[2]}
@@ -612,10 +612,10 @@ func Test_achievementService_GetLevel_success(t *testing.T) {
 			Level: 1,
 		}
 		level = AchievementLevel{
-			achID:       1,
-			achName:     "some_name",
-			level:       1,
-			description: "some_description",
+			AchID:       1,
+			AchName:     "some_name",
+			Level:       1,
+			Description: "some_description",
 		}
 		response = level
 	)

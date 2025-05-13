@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"errors"
+	"uiren/internal/app/progress"
 	"uiren/internal/infrastracture/hasher"
 	"uiren/pkg/logger"
 )
@@ -20,21 +21,22 @@ type repository interface {
 	getUserByID(ctx context.Context, id string) (UserDTO, error)
 }
 
-type userProgressRepo interface {
-	getBadges(ctx context.Context, id string) ([]string, error)
-	getXP(ctx context.Context, id string) (int, error)
-	getAchievements(ctx context.Context, id string) ([]UserAchievement, error)
+// temp
+type ProgressService interface {
+	GetBadges(ctx context.Context, id string) ([]string, error)
+	GetXP(ctx context.Context, id string) (int, error)
+	GetAchievements(ctx context.Context, id string) ([]progress.UserAchievement, error)
 }
 
 type UserService struct {
-	repo    repository
-	prgRepo userProgressRepo
+	repo       repository
+	prgService ProgressService
 }
 
-func NewUserService(repo repository, prgRepo userProgressRepo) *UserService {
+func NewUserService(repo repository, prgService ProgressService) *UserService {
 	return &UserService{
-		repo:    repo,
-		prgRepo: prgRepo,
+		repo:       repo,
+		prgService: prgService,
 	}
 }
 
@@ -118,28 +120,28 @@ func (s *UserService) CheckUserExists(ctx context.Context, username string) erro
 func (s *UserService) GetUserProgress(ctx context.Context, id string) (UserProgress, error) {
 	logger.Info("UserService.GetUserProgress new request")
 
-	badges, err := s.prgRepo.getBadges(ctx, id)
+	badges, err := s.prgService.GetBadges(ctx, id)
 	if err != nil {
-		logger.Error("UserService.GetUserProgress prgRepo.getBadges: ", err)
+		logger.Error("UserService.GetUserProgress GetBadges: ", err)
 		return UserProgress{}, err
 	}
 
-	xp, err := s.prgRepo.getXP(ctx, id)
+	xp, err := s.prgService.GetXP(ctx, id)
 	if err != nil {
-		logger.Error("UserService.GetUserProgress prgRepo.getXp: ", err)
+		logger.Error("UserService.GetUserProgress GetXP: ", err)
 		return UserProgress{}, err
 	}
 
-	achievementsList, err := s.prgRepo.getAchievements(ctx, id)
+	achievements, err := s.prgService.GetAchievements(ctx, id)
 	if err != nil {
-		logger.Error("UserService.GetUserProgress prgRepo.getAchievements: ", err)
+		logger.Error("UserService.GetUserProgress GetAchievements: ", err)
 		return UserProgress{}, err
 	}
 
 	return UserProgress{
 		Badges:       badges,
 		XP:           int32(xp),
-		Achievements: achievementsList,
+		Achievements: achievements,
 	}, nil
 }
 

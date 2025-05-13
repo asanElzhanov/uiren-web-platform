@@ -33,13 +33,13 @@ func (ach achievement) toDTO(levels []AchievementLevel) AchievementDTO {
 }
 
 type AchievementLevel struct {
-	achID       int
-	achName     string
-	level       int
-	description string
-	threshold   int
-	createdAt   time.Time
-	updatedAt   time.Time
+	AchID       int
+	AchName     string
+	Level       int
+	Description string
+	Threshold   int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type LevelData struct {

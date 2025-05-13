@@ -7,6 +7,7 @@ package users
 import (
 	context "context"
 	reflect "reflect"
+	progress "uiren/internal/app/progress"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -152,70 +153,70 @@ func (mr *MockrepositoryMockRecorder) updateUser(ctx, dto interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "updateUser", reflect.TypeOf((*Mockrepository)(nil).updateUser), ctx, dto)
 }
 
-// MockuserProgressRepo is a mock of userProgressRepo interface.
-type MockuserProgressRepo struct {
+// MockProgressService is a mock of ProgressService interface.
+type MockProgressService struct {
 	ctrl     *gomock.Controller
-	recorder *MockuserProgressRepoMockRecorder
+	recorder *MockProgressServiceMockRecorder
 }
 
-// MockuserProgressRepoMockRecorder is the mock recorder for MockuserProgressRepo.
-type MockuserProgressRepoMockRecorder struct {
-	mock *MockuserProgressRepo
+// MockProgressServiceMockRecorder is the mock recorder for MockProgressService.
+type MockProgressServiceMockRecorder struct {
+	mock *MockProgressService
 }
 
-// NewMockuserProgressRepo creates a new mock instance.
-func NewMockuserProgressRepo(ctrl *gomock.Controller) *MockuserProgressRepo {
-	mock := &MockuserProgressRepo{ctrl: ctrl}
-	mock.recorder = &MockuserProgressRepoMockRecorder{mock}
+// NewMockProgressService creates a new mock instance.
+func NewMockProgressService(ctrl *gomock.Controller) *MockProgressService {
+	mock := &MockProgressService{ctrl: ctrl}
+	mock.recorder = &MockProgressServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockuserProgressRepo) EXPECT() *MockuserProgressRepoMockRecorder {
+func (m *MockProgressService) EXPECT() *MockProgressServiceMockRecorder {
 	return m.recorder
 }
 
-// getAchievements mocks base method.
-func (m *MockuserProgressRepo) getAchievements(ctx context.Context, id string) ([]UserAchievement, error) {
+// GetAchievements mocks base method.
+func (m *MockProgressService) GetAchievements(ctx context.Context, id string) ([]progress.UserAchievement, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getAchievements", ctx, id)
-	ret0, _ := ret[0].([]UserAchievement)
+	ret := m.ctrl.Call(m, "GetAchievements", ctx, id)
+	ret0, _ := ret[0].([]progress.UserAchievement)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// getAchievements indicates an expected call of getAchievements.
-func (mr *MockuserProgressRepoMockRecorder) getAchievements(ctx, id interface{}) *gomock.Call {
+// GetAchievements indicates an expected call of GetAchievements.
+func (mr *MockProgressServiceMockRecorder) GetAchievements(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAchievements", reflect.TypeOf((*MockuserProgressRepo)(nil).getAchievements), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAchievements", reflect.TypeOf((*MockProgressService)(nil).GetAchievements), ctx, id)
 }
 
-// getBadges mocks base method.
-func (m *MockuserProgressRepo) getBadges(ctx context.Context, id string) ([]string, error) {
+// GetBadges mocks base method.
+func (m *MockProgressService) GetBadges(ctx context.Context, id string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getBadges", ctx, id)
+	ret := m.ctrl.Call(m, "GetBadges", ctx, id)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// getBadges indicates an expected call of getBadges.
-func (mr *MockuserProgressRepoMockRecorder) getBadges(ctx, id interface{}) *gomock.Call {
+// GetBadges indicates an expected call of GetBadges.
+func (mr *MockProgressServiceMockRecorder) GetBadges(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBadges", reflect.TypeOf((*MockuserProgressRepo)(nil).getBadges), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBadges", reflect.TypeOf((*MockProgressService)(nil).GetBadges), ctx, id)
 }
 
-// getXP mocks base method.
-func (m *MockuserProgressRepo) getXP(ctx context.Context, id string) (int, error) {
+// GetXP mocks base method.
+func (m *MockProgressService) GetXP(ctx context.Context, id string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getXP", ctx, id)
+	ret := m.ctrl.Call(m, "GetXP", ctx, id)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// getXP indicates an expected call of getXP.
-func (mr *MockuserProgressRepoMockRecorder) getXP(ctx, id interface{}) *gomock.Call {
+// GetXP indicates an expected call of GetXP.
+func (mr *MockProgressServiceMockRecorder) GetXP(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getXP", reflect.TypeOf((*MockuserProgressRepo)(nil).getXP), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetXP", reflect.TypeOf((*MockProgressService)(nil).GetXP), ctx, id)
 }
