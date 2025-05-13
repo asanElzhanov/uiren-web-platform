@@ -19,6 +19,13 @@ func (app *App) sendFriendRequest(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	usernameVal := c.Locals("username")
+	username, ok := usernameVal.(string)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", incorrect token payload(missing username)"})
+	}
+	req.RequesterUsername = username
+
 	if req.RequesterUsername == "" || req.RecipientUsername == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", username required"})
 	}
@@ -52,6 +59,13 @@ func (app *App) handleFriendRequest(c *fiber.Ctx) error {
 		logger.Error("app.handleFriendRequest c.BodyParser: ", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	usernameVal := c.Locals("username")
+	username, ok := usernameVal.(string)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", incorrect token payload(missing username)"})
+	}
+	req.RequesterUsername = username
 
 	if req.RequesterUsername == "" || req.RecipientUsername == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", username required"})
@@ -106,8 +120,14 @@ func (app *App) getFriendList(c *fiber.Ctx) error {
 func (app *App) getRequestList(c *fiber.Ctx) error {
 	var (
 		ctx = c.Context()
-		req = c.Query("username")
 	)
+
+	usernameVal := c.Locals("username")
+	username, ok := usernameVal.(string)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", incorrect token payload(missing username)"})
+	}
+	req := username
 
 	if req == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", username required"})

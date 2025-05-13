@@ -19,7 +19,7 @@ type FriendList struct {
 }
 
 type FriendshipRequestDTO struct {
-	RequesterUsername string `json:"requester_username"`
+	RequesterUsername string
 	RecipientUsername string `json:"recipient_username"`
 	Status            string `json:"status"`
 	Recipient         string `json:"recipient"`
