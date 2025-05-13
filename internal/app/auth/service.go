@@ -88,6 +88,7 @@ func (s *AuthService) SignIn(ctx context.Context, params LoginParams) (string, s
 	}
 
 	payload := jwt_maker.PayloadDTO{
+		ID:        user.ID,
 		Username:  user.Username,
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,

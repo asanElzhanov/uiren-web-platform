@@ -22,6 +22,7 @@ func (maker *jwtMaker) NewToken(payload PayloadDTO) (string, error) {
 	payload.Duration = maker.duration
 
 	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = payload.ID
 	claims["username"] = payload.Username
 	claims["fistname"] = payload.Firstname
 	claims["lastname"] = payload.Lastname
