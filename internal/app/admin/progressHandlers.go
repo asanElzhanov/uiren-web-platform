@@ -26,6 +26,21 @@ func (app *App) updateProgress(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", invalid request"})
 	}
 
+	isAdminVal := c.Locals("isAdmin")
+	isAdmin, ok := isAdminVal.(bool)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", incorrect token payload(missing isAdmin)"})
+	}
+
+	if !isAdmin {
+		idVal := c.Locals("id")
+		id, ok := idVal.(string)
+		if !ok {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", incorrect id"})
+		}
+		req.UserID = id
+	}
+
 	if req.UserID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", userID must be provided"})
 	}

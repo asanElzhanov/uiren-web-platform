@@ -52,6 +52,16 @@ func JWTMiddleware() fiber.Handler {
 		}
 		c.Locals("username", username)
 
+		idVal, exists := claims["id"]
+		if !exists {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token claims"})
+		}
+		id, ok := idVal.(string)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token claims"})
+		}
+		c.Locals("id", id)
+
 		isAdmin := false
 		if isAdminVal, exists := claims["isAdmin"]; exists {
 			if isAdminBool, ok := isAdminVal.(bool); ok {
