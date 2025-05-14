@@ -93,6 +93,21 @@ func (mr *MockrepositoryMockRecorder) deleteLesson(ctx, code interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteLesson", reflect.TypeOf((*Mockrepository)(nil).deleteLesson), ctx, code)
 }
 
+// getAllLessons mocks base method.
+func (m *Mockrepository) getAllLessons(ctx context.Context) ([]lesson, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getAllLessons", ctx)
+	ret0, _ := ret[0].([]lesson)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllLessons indicates an expected call of getAllLessons.
+func (mr *MockrepositoryMockRecorder) getAllLessons(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllLessons", reflect.TypeOf((*Mockrepository)(nil).getAllLessons), ctx)
+}
+
 // getLesson mocks base method.
 func (m *Mockrepository) getLesson(ctx context.Context, code string) (lesson, error) {
 	m.ctrl.T.Helper()

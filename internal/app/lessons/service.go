@@ -19,6 +19,8 @@ type repository interface {
 	getLessonsByCodes(ctx context.Context, codes []string) ([]lesson, error)
 	addExerciseToList(ctx context.Context, code, exerciseCode string) error
 	deleteExerciseFromList(ctx context.Context, code, exerciseCode string) error
+
+	getAllLessons(ctx context.Context) ([]lesson, error)
 }
 
 type exerciseService interface {
@@ -133,4 +135,26 @@ func (s LessonsService) DeleteExerciseFromList(ctx context.Context, code, exerci
 	}
 
 	return nil
+}
+
+// todo: write tests
+func (s LessonsService) GetAllLessonsWithExercises(ctx context.Context) ([]LessonDTO, error) {
+	logger.Info("LessonsService.GetAllLessonsWithExercises new request")
+
+	lessons, err := s.repo.getAllLessons(ctx)
+	if err != nil {
+		logger.Error("LessonsService.GetAllLessonsWithExercises repo.getAllLessons: ", err)
+		return nil, err
+	}
+
+	var result []LessonDTO
+	for _, lesson := range lessons {
+		exercises, err := s.exerciseService.GetExercisesByCodes(ctx, lesson.Exercises)
+		if err != nil {
+			logger.Error("LessonsService.GetAllLessonsWithExercises exerciseService.GetExercisesByCodes: ", err)
+			return nil, err
+		}
+		result = append(result, lesson.toDTO(exercises))
+	}
+	return result, nil
 }

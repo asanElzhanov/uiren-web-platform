@@ -136,6 +136,21 @@ func (mr *MockachievementRepoMockRecorder) getAchievement(ctx, id interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAchievement", reflect.TypeOf((*MockachievementRepo)(nil).getAchievement), ctx, id)
 }
 
+// getAllAchievements mocks base method.
+func (m *MockachievementRepo) getAllAchievements(ctx context.Context) ([]achievement, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getAllAchievements", ctx)
+	ret0, _ := ret[0].([]achievement)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllAchievements indicates an expected call of getAllAchievements.
+func (mr *MockachievementRepoMockRecorder) getAllAchievements(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllAchievements", reflect.TypeOf((*MockachievementRepo)(nil).getAllAchievements), ctx)
+}
+
 // getLastLevelAndTreshold mocks base method.
 func (m *MockachievementRepo) getLastLevelAndTreshold(ctx context.Context, achID int) (LevelData, error) {
 	m.ctrl.T.Helper()

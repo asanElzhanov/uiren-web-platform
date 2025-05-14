@@ -27,6 +27,51 @@ func (r *achievementRepository) beginTransaction(ctx context.Context) (transacti
 	return tx, nil
 }
 
+func (r *achievementRepository) getAllAchievements(ctx context.Context) ([]achievement, error) {
+	var (
+		query = `
+		SELECT
+			id,
+			name,
+			created_at,
+			updated_at
+		FROM
+			achievements
+		WHERE
+			deleted_at IS NULL;
+		`
+
+		response []achievement
+	)
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var achievement achievement
+		if err := rows.Scan(
+			&achievement.id,
+			&achievement.name,
+			&achievement.createdAt,
+			&achievement.deletedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		response = append(response, achievement)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func (r *achievementRepository) getAchievement(ctx context.Context, id int) (achievement, error) {
 	var (
 		query = `

@@ -190,3 +190,23 @@ func (r *lessonRepository) deleteExerciseFromList(ctx context.Context, code, exe
 
 	return nil
 }
+
+func (r *lessonRepository) getAllLessons(ctx context.Context) ([]lesson, error) {
+	var (
+		collection = r.db.Collection(lessonsCollection)
+		filter     = bson.M{"deleted_at": nil}
+		result     []lesson
+	)
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	if err := cur.All(ctx, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

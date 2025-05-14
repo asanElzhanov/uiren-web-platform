@@ -8,6 +8,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func (app *App) getAllModules(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	resp, err := app.modulesService.GetAllModulesWithLessons(ctx)
+	if err != nil {
+		logger.Error("app.getAllModules modulesService.GetAllModulesWithLessons: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(resp)
+}
+
 func (app *App) getModule(c *fiber.Ctx) error {
 	var (
 		ctx = c.Context()

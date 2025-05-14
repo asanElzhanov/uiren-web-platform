@@ -122,3 +122,26 @@ func (s ModulesService) GetModulesList(ctx context.Context) ([]Module, error) {
 	// todo: change to func with pagination
 	return s.repo.getAllModules(ctx)
 }
+
+// todo: write tests
+func (s ModulesService) GetAllModulesWithLessons(ctx context.Context) ([]ModuleWithLessons, error) {
+	logger.Info("ModulesService.GetModulesWithLessons new request")
+
+	modules, err := s.repo.getAllModules(ctx)
+	if err != nil {
+		logger.Error("ModulesService.GetModulesWithLessons repo.getAllModules: ", err)
+		return nil, err
+	}
+
+	var result []ModuleWithLessons
+	for _, module := range modules {
+		lessons, err := s.lessonsService.GetLessonsByCodes(ctx, module.Lessons)
+		if err != nil {
+			logger.Error("ModulesService.GetModulesWithLessons lessonsService.GetLessonsByCodes: ", err)
+			return nil, err
+		}
+		result = append(result, module.toDTO(lessons))
+	}
+
+	return result, nil
+}

@@ -135,6 +135,20 @@ func (app *App) getAchievement(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(achievement)
 }
 
+func (app *App) getAllAchievements(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	resp, err := app.achievementService.GetAllAchievements(ctx)
+	if err != nil {
+		logger.Error("app.getAllAchievements achievementService.GetAllAchievements: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(resp)
+}
+
 func (app *App) addAchievementLevel(c *fiber.Ctx) error {
 	var (
 		ctx = c.Context()

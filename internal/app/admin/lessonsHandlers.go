@@ -7,6 +7,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func (app *App) getAllLessons(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	resp, err := app.lessonService.GetAllLessonsWithExercises(ctx)
+	if err != nil {
+		logger.Error("app.getLessons lessonService.GetAllLessonsWithExercises: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(resp)
+}
+
 func (app *App) getLesson(c *fiber.Ctx) error {
 	var (
 		ctx = c.Context()

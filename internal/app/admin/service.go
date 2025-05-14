@@ -32,6 +32,7 @@ type modulesService interface {
 	UpdateModule(ctx context.Context, code string, dto modules.UpdateModuleDTO) error
 	AddLessonToList(ctx context.Context, code, lessonCode string) error
 	DeleteLessonFromList(ctx context.Context, code, lessonCode string) error
+	GetAllModulesWithLessons(ctx context.Context) ([]modules.ModuleWithLessons, error)
 }
 
 type lessonService interface {
@@ -41,6 +42,7 @@ type lessonService interface {
 	DeleteLesson(ctx context.Context, code string) error
 	AddExerciseToList(ctx context.Context, code, exerciseCode string) error
 	DeleteExerciseFromList(ctx context.Context, code, exerciseCode string) error
+	GetAllLessonsWithExercises(ctx context.Context) ([]lessons.LessonDTO, error)
 }
 
 type exerciseService interface {
@@ -48,6 +50,7 @@ type exerciseService interface {
 	CreateExercise(ctx context.Context, dto exercises.CreateExerciseDTO) (primitive.ObjectID, error)
 	UpdateExercise(ctx context.Context, code string, dto exercises.UpdateExerciseDTO) error
 	DeleteExercise(ctx context.Context, code string) error
+	GetAllExercises(ctx context.Context) ([]exercises.Exercise, error)
 }
 
 type achievementService interface {
@@ -55,6 +58,7 @@ type achievementService interface {
 	GetAchievement(ctx context.Context, id int) (achievements.AchievementDTO, error)
 	UpdateAchievement(ctx context.Context, dto achievements.UpdateAchievementDTO) (string, error)
 	DeleteAchievement(ctx context.Context, id int) error
+	GetAllAchievements(ctx context.Context) ([]achievements.AchievementDTO, error)
 
 	AddAchievementLevel(ctx context.Context, dto achievements.AddAchievementLevelDTO) error
 	DeleteAchievementLevel(ctx context.Context, dto achievements.DeleteAchievementLevelDTO) error
@@ -165,6 +169,7 @@ func (app *App) SetHandlers() {
 	usersApi.Get("/", app.getAllUsers)
 	//modules
 	modulesApi := api.Group("/modules", middleware.JWTMiddleware(), middleware.AdminMiddleware())
+	modulesApi.Get("/", app.getAllModules)
 	modulesApi.Get("/:code", app.getModule)
 	modulesApi.Post("/", app.createModule)
 	modulesApi.Delete("/:code", app.deleteModule)
@@ -173,6 +178,7 @@ func (app *App) SetHandlers() {
 	modulesApi.Delete("/:code/lessons-list/:lessonCode", app.deleteLessonFromList)
 	//lessons
 	lessonApi := api.Group("/lessons", middleware.JWTMiddleware(), middleware.AdminMiddleware())
+	lessonApi.Get("/", app.getAllLessons)
 	lessonApi.Get("/:code", app.getLesson)
 	lessonApi.Post("/", app.createLesson)
 	lessonApi.Patch("/:code", app.updateLesson)
@@ -181,12 +187,14 @@ func (app *App) SetHandlers() {
 	lessonApi.Delete(":code/exercises-list/:exerciseCode", app.deleteExerciseFromList)
 	//exercises
 	exerciseApi := api.Group("/exercises", middleware.JWTMiddleware(), middleware.AdminMiddleware())
+	exerciseApi.Get("/", app.getAllExercises)
 	exerciseApi.Get("/:code", app.getExercise)
 	exerciseApi.Post("/", app.createExercise)
 	exerciseApi.Patch("/:code", app.updateExercise)
 	exerciseApi.Delete("/:code", app.deleteExercise)
 	//achievements
 	achievementsApi := api.Group("/achievements", middleware.JWTMiddleware(), middleware.AdminMiddleware())
+	achievementsApi.Get("/", app.getAllAchievements)
 	achievementsApi.Post("/", app.createAchievement)
 	achievementsApi.Patch("/", app.updateAchievement)
 	achievementsApi.Delete("/", app.deleteAchievement)

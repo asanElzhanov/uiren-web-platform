@@ -10,6 +10,7 @@ import (
 //go:generate mockgen -source service.go -destination service_mock.go -package achievements
 
 type achievementRepo interface {
+	getAllAchievements(ctx context.Context) ([]achievement, error)
 	getAchievement(ctx context.Context, id int) (achievement, error)
 	createAchievement(ctx context.Context, name string) (achievement, error)
 	updateAchievement(ctx context.Context, dto UpdateAchievementDTO) (string, error)
@@ -163,4 +164,28 @@ func (s AchievementService) GetLevel(ctx context.Context, achID, level int) (Ach
 	}
 
 	return achievementLevel, nil
+}
+
+// todo write tests
+func (s AchievementService) GetAllAchievements(ctx context.Context) ([]AchievementDTO, error) {
+	logger.Info("AchievementService.GetAllAchievements new request")
+
+	achievements, err := s.achievementRepo.getAllAchievements(ctx)
+	if err != nil {
+		logger.Error("AchievementService.GetAllAchievements achievementRepo.getAllAchievements: ", err)
+		return nil, err
+	}
+
+	var result []AchievementDTO
+	for _, achievement := range achievements {
+		levels, err := s.achievementRepo.getLevelsByAchievementID(ctx, achievement.id)
+		if err != nil {
+			logger.Error("AchievementService.GetAllAchievements achievementRepo.getLevelsByAchievementID: ", err)
+			return nil, err
+		}
+
+		result = append(result, achievement.toDTO(levels))
+	}
+
+	return result, nil
 }

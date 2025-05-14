@@ -173,3 +173,23 @@ func (r *exercisesRepository) updateExercise(ctx context.Context, code string, d
 	}
 	return nil
 }
+
+func (r *exercisesRepository) getAllExercises(ctx context.Context) ([]Exercise, error) {
+	var (
+		collection = r.db.Collection(exercisesCollection)
+		filter     = bson.M{"deleted_at": nil}
+		result     []Exercise
+	)
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	if err := cur.All(ctx, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
