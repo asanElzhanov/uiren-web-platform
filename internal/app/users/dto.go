@@ -10,7 +10,7 @@ import (
 
 type UserProgress struct {
 	Badges       []string                   `json:"badges"`
-	XP           int32                      `json:"xp"`
+	XP           int                        `json:"xp"`
 	Achievements []progress.UserAchievement `json:"achievements"`
 }
 

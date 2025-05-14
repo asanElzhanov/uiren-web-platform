@@ -140,7 +140,7 @@ func (s *UserService) GetUserProgress(ctx context.Context, id string) (UserProgr
 
 	return UserProgress{
 		Badges:       badges,
-		XP:           int32(xp),
+		XP:           xp,
 		Achievements: achievements,
 	}, nil
 }
