@@ -55,3 +55,17 @@ func (app *App) getUserInfo(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(userInfo)
 }
+
+func (app *App) getXPLeaderboard(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	leaderboard, err := app.dataService.GetXPLeaderboard(ctx)
+	if err != nil {
+		logger.Error("app.getXPLeaderboard dataService.GetXPLeaderboard: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(leaderboard.Board)
+}

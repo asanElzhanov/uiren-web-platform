@@ -52,6 +52,8 @@ var (
 	emailSenderNameKey     = "email_sender_name"
 	fromEmailAddressKey    = "from_email_address"
 	verificationCodeTTLKey = "verification_code_TTL"
+	//data
+	xpLeaderboardLimitKey = "xp_leaderboard_limit"
 )
 
 func main() {
@@ -155,7 +157,13 @@ func main() {
 	authService.WithRedisClient(redisDB)
 	authService.SetRefreshTokenTTL(config.GetValue(refreshTokenDuration).Duration())
 
-	dataService := data.NewDataService(redisDB, userService, modulesService, config.GetValue(dbRedisDataTTLKey).Duration())
+	dataService := data.NewDataService(
+		redisDB,
+		userService,
+		modulesService,
+		config.GetValue(dbRedisDataTTLKey).Duration(),
+	)
+	dataService.WithProgressService(progressService, config.GetValue(xpLeaderboardLimitKey).Int())
 
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)

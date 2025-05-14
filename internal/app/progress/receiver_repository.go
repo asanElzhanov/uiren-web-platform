@@ -163,3 +163,56 @@ func (r *progressReceiverRepository) getAchievementProgress(ctx context.Context,
 
 	return achievement, nil
 }
+
+func (r *progressReceiverRepository) getXPLeaderboard(ctx context.Context, limit int) (XPLeaderboard, error) {
+	var (
+		query = `
+		WITH leaderboard AS(
+			SELECT 
+				user_id as uid, 
+				username, 
+				xp, 
+				row_number() OVER (ORDER BY xp DESC) as rank_number
+			FROM users_progress up
+			JOIN users u ON up.user_id = u.id
+			WHERE u.deleted_at IS NULL
+		)
+
+		SELECT uid, username, xp, rank_number 
+		FROM leaderboard
+		ORDER BY rank_number
+		LIMIT $1;
+		`
+
+		counter = 0
+		result  XPLeaderboard
+	)
+
+	rows, err := r.db.Query(ctx, query, limit)
+	if err != nil {
+		return XPLeaderboard{}, err
+	}
+
+	for rows.Next() {
+		var entry XPLeaderboardEntry
+		if err := rows.Scan(
+			&entry.UserID,
+			&entry.Username,
+			&entry.XP,
+			&entry.Rank,
+		); err != nil {
+			return XPLeaderboard{}, err
+		}
+
+		counter++
+		result.Leaders = append(result.Leaders, entry)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return XPLeaderboard{}, err
+	}
+
+	result.Total = counter
+	return result, nil
+}

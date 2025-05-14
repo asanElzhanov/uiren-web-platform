@@ -23,6 +23,7 @@ updateUserProgressRequest json
 	}
 */
 
+// for update
 type UserAchievement struct {
 	AchievementName  string `json:"ach_name"`
 	Level            int    `json:"lvl"`
@@ -59,7 +60,22 @@ type UpdateAchievementProgressRequest struct {
 	Progress AchievementProgress `json:"achievements_progress"`
 }
 
+// for insert badges
 type InsertBadgeRequest struct {
 	Badge       string `json:"badge"`
 	Description string `json:"description"`
+}
+
+// for leaderboard
+
+type XPLeaderboard struct {
+	Leaders []XPLeaderboardEntry `json:"leaders"`
+	Total   int                  `json:"total"`
+}
+
+type XPLeaderboardEntry struct {
+	Rank     int    `json:"rank"`
+	UserID   string `json:"user_id"`
+	Username string `json:"username"`
+	XP       int    `json:"xp"`
 }

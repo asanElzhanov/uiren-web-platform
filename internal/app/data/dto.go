@@ -2,9 +2,11 @@ package data
 
 import (
 	"uiren/internal/app/modules"
+	"uiren/internal/app/progress"
 	"uiren/internal/app/users"
 )
 
+// for service
 type UserInfo struct {
 	ID        string              `json:"id"`
 	Username  string              `json:"username"`
@@ -18,4 +20,8 @@ type UserInfo struct {
 type ModulesList struct {
 	Modules []modules.Module `json:"modules"`
 	Total   int              `json:"total"`
+}
+
+type XPLeaderboard struct {
+	Board progress.XPLeaderboard
 }

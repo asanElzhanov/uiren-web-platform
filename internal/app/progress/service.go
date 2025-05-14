@@ -13,6 +13,7 @@ type progressReceiverRepo interface {
 	getXP(ctx context.Context, id string) (int, error)
 	getAchievementsProgress(ctx context.Context, id string) ([]UserAchievement, error)
 	getAchievementProgress(ctx context.Context, userID string, achID int) (UserAchievement, error)
+	getXPLeaderboard(ctx context.Context, limit int) (XPLeaderboard, error)
 }
 
 type progressUpdaterRepo interface {
@@ -176,4 +177,16 @@ func (s *ProgressService) RegisterNewBadge(ctx context.Context, req InsertBadgeR
 		return err
 	}
 	return nil
+}
+
+func (s *ProgressService) GetXPLeaderboard(ctx context.Context, limit int) (XPLeaderboard, error) {
+	logger.Info("ProgressService.GetXPLeaderboard new request")
+
+	leaderboard, err := s.receiverRepo.getXPLeaderboard(ctx, limit)
+	if err != nil {
+		logger.Error("ProgressService.GetXPLeaderboard getXPLeaderboard")
+		return XPLeaderboard{}, err
+	}
+
+	return leaderboard, nil
 }

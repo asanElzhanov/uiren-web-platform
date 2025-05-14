@@ -95,6 +95,21 @@ func (mr *MockprogressReceiverRepoMockRecorder) getXP(ctx, id interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getXP", reflect.TypeOf((*MockprogressReceiverRepo)(nil).getXP), ctx, id)
 }
 
+// getXPLeaderboard mocks base method.
+func (m *MockprogressReceiverRepo) getXPLeaderboard(ctx context.Context, limit int) (XPLeaderboard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getXPLeaderboard", ctx, limit)
+	ret0, _ := ret[0].(XPLeaderboard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getXPLeaderboard indicates an expected call of getXPLeaderboard.
+func (mr *MockprogressReceiverRepoMockRecorder) getXPLeaderboard(ctx, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getXPLeaderboard", reflect.TypeOf((*MockprogressReceiverRepo)(nil).getXPLeaderboard), ctx, limit)
+}
+
 // MockprogressUpdaterRepo is a mock of progressUpdaterRepo interface.
 type MockprogressUpdaterRepo struct {
 	ctrl     *gomock.Controller

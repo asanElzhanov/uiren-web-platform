@@ -86,6 +86,7 @@ type dataService interface {
 	GetUserWithoutProgress(ctx context.Context, username string) (data.UserInfo, error)
 	GetUserWithProgress(ctx context.Context, username string) (data.UserInfo, error)
 	GetModules(ctx context.Context) (data.ModulesList, error)
+	GetXPLeaderboard(ctx context.Context) (data.XPLeaderboard, error)
 }
 
 type progressService interface {
@@ -202,6 +203,7 @@ func (app *App) SetHandlers() {
 	dataApi := api.Group("/data", middleware.JWTMiddleware())
 	dataApi.Get("/modules", app.mainPageModules)
 	dataApi.Get("/users", app.getUserInfo)
+	dataApi.Get("/xp-leaderboard", app.getXPLeaderboard)
 	//progress
 	progressApi := api.Group("/progress", middleware.JWTMiddleware())
 	progressApi.Patch("/", app.updateProgress)

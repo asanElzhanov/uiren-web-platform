@@ -655,3 +655,48 @@ func Test_ProgressService_updateAchievementProgress_level_calculation(t *testing
 		assert.NoError(t, err)
 	})
 }
+
+func Test_ProgressService_GetXPLeaderboard_success(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx     = context.TODO()
+		ctrl    = gomock.NewController(t)
+		repo    = NewMockprogressReceiverRepo(ctrl)
+		service = &ProgressService{receiverRepo: repo}
+		limit   = 2
+		board   = XPLeaderboard{
+			Leaders: []XPLeaderboardEntry{
+				{
+					Rank: 1,
+				},
+				{
+					Rank: 2,
+				},
+			},
+			Total: 2,
+		}
+	)
+
+	repo.EXPECT().getXPLeaderboard(ctx, limit).Return(board, nil)
+
+	leaderboard, err := service.GetXPLeaderboard(ctx, limit)
+	assert.NoError(t, err)
+	assert.Equal(t, leaderboard, board)
+}
+
+func Test_ProgressService_GetXPLeaderboard_repoFailed(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx     = context.TODO()
+		ctrl    = gomock.NewController(t)
+		repo    = NewMockprogressReceiverRepo(ctrl)
+		service = &ProgressService{receiverRepo: repo}
+		errRepo = errors.New("db error")
+	)
+
+	repo.EXPECT().getXPLeaderboard(ctx, 2).Return(XPLeaderboard{}, errRepo)
+
+	board, err := service.GetXPLeaderboard(ctx, 2)
+	assert.Equal(t, errRepo, err)
+	assert.Equal(t, board, XPLeaderboard{})
+}
