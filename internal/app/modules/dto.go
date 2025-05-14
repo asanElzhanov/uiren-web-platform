@@ -19,16 +19,16 @@ type Module struct {
 }
 
 type ModuleWithLessons struct {
-	Code        string
-	Title       string
-	Description string
-	Goal        string
-	Difficulty  string
-	UnlockReq   UnlockRequirements
-	Reward      Reward
-	Lessons     []lessons.LessonDTO
-	CreatedAt   time.Time
-	DeletedAt   time.Time
+	Code        string              `json:"code"`
+	Title       string              `json:"title"`
+	Description string              `json:"description"`
+	Goal        string              `json:"goadl"`
+	Difficulty  string              `json:"difficulty"`
+	UnlockReq   UnlockRequirements  `json:"unlock_requirements"`
+	Reward      Reward              `json:"reward"`
+	Lessons     []lessons.LessonDTO `json:"lessons"`
+	CreatedAt   time.Time           `json:"created_at"`
+	DeletedAt   time.Time           `json:"deleted_at"`
 }
 
 func (module Module) toDTO(lessons []lessons.LessonDTO) ModuleWithLessons {

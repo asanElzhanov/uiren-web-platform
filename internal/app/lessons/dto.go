@@ -15,12 +15,12 @@ type lesson struct {
 }
 
 type LessonDTO struct {
-	Code        string
-	Title       string
-	Description string
-	Exercises   []exercises.Exercise
-	CreatedAt   time.Time
-	DeletedAt   time.Time
+	Code        string               `json:"code"`
+	Title       string               `json:"title"`
+	Description string               `json:"description"`
+	Exercises   []exercises.Exercise `json:"exercises"`
+	CreatedAt   time.Time            `json:"created_at"`
+	DeletedAt   time.Time            `json:"deleted_at"`
 }
 
 func (lesson lesson) toDTO(exercises []exercises.Exercise) LessonDTO {

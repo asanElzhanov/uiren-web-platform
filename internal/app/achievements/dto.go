@@ -13,12 +13,12 @@ type achievement struct {
 }
 
 type AchievementDTO struct {
-	ID        int
-	Name      string
-	Levels    []AchievementLevel
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
+	ID        int                `json:"id"`
+	Name      string             `json:"name"`
+	Levels    []AchievementLevel `json:"levels"`
+	CreatedAt time.Time          `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
+	DeletedAt *time.Time         `json:"deleted_at"`
 }
 
 func (ach achievement) toDTO(levels []AchievementLevel) AchievementDTO {
@@ -33,13 +33,13 @@ func (ach achievement) toDTO(levels []AchievementLevel) AchievementDTO {
 }
 
 type AchievementLevel struct {
-	AchID       int
-	AchName     string
-	Level       int
-	Description string
-	Threshold   int
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	AchID       int       `json:"achievement_id"`
+	AchName     string    `json:"achievement_name"`
+	Level       int       `json:"level"`
+	Description string    `json:"description"`
+	Threshold   int       `json:"threshold"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type LevelData struct {
