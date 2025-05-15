@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/progress"
+	"uiren/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -71,7 +72,7 @@ func (app *App) updateProgress(c *fiber.Ctx) error {
 func (app *App) registerBadge(c *fiber.Ctx) error {
 	var (
 		ctx = c.Context()
-		req progress.InsertBadgeRequest
+		req progress.Badge
 	)
 
 	if err := c.BodyParser(&req); err != nil {
@@ -94,4 +95,18 @@ func (app *App) registerBadge(c *fiber.Ctx) error {
 	}
 
 	return fiberOK(c)
+}
+
+func (app *App) getAllBadges(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	res, err := app.progressService.GetAllBadges(ctx)
+	if err != nil {
+		logger.Error("app.getAllBadges progressService.GetAllBadges: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(res)
 }

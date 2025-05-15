@@ -65,19 +65,34 @@ func (mr *MockprogressReceiverRepoMockRecorder) getAchievementsProgress(ctx, id 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAchievementsProgress", reflect.TypeOf((*MockprogressReceiverRepo)(nil).getAchievementsProgress), ctx, id)
 }
 
-// getBadges mocks base method.
-func (m *MockprogressReceiverRepo) getBadges(ctx context.Context, id string) ([]string, error) {
+// getAllBadges mocks base method.
+func (m *MockprogressReceiverRepo) getAllBadges(ctx context.Context) ([]Badge, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getBadges", ctx, id)
+	ret := m.ctrl.Call(m, "getAllBadges", ctx)
+	ret0, _ := ret[0].([]Badge)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// getAllBadges indicates an expected call of getAllBadges.
+func (mr *MockprogressReceiverRepoMockRecorder) getAllBadges(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getAllBadges", reflect.TypeOf((*MockprogressReceiverRepo)(nil).getAllBadges), ctx)
+}
+
+// getUserBadges mocks base method.
+func (m *MockprogressReceiverRepo) getUserBadges(ctx context.Context, id string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "getUserBadges", ctx, id)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// getBadges indicates an expected call of getBadges.
-func (mr *MockprogressReceiverRepoMockRecorder) getBadges(ctx, id interface{}) *gomock.Call {
+// getUserBadges indicates an expected call of getUserBadges.
+func (mr *MockprogressReceiverRepoMockRecorder) getUserBadges(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBadges", reflect.TypeOf((*MockprogressReceiverRepo)(nil).getBadges), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getUserBadges", reflect.TypeOf((*MockprogressReceiverRepo)(nil).getUserBadges), ctx, id)
 }
 
 // getXP mocks base method.
@@ -177,7 +192,7 @@ func (mr *MockprogressUpdaterRepoMockRecorder) beginTransaction(ctx interface{})
 }
 
 // insertBadge mocks base method.
-func (m *MockprogressUpdaterRepo) insertBadge(ctx context.Context, req InsertBadgeRequest) error {
+func (m *MockprogressUpdaterRepo) insertBadge(ctx context.Context, req Badge) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "insertBadge", ctx, req)
 	ret0, _ := ret[0].(error)

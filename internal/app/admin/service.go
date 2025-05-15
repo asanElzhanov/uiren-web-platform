@@ -95,7 +95,8 @@ type dataService interface {
 
 type progressService interface {
 	UpdateUserProgress(ctx context.Context, req progress.UpdateUserProgressRequest) error
-	RegisterNewBadge(ctx context.Context, req progress.InsertBadgeRequest) error
+	RegisterNewBadge(ctx context.Context, req progress.Badge) error
+	GetAllBadges(ctx context.Context) ([]progress.Badge, error)
 }
 
 type App struct {
@@ -216,4 +217,7 @@ func (app *App) SetHandlers() {
 	progressApi := api.Group("/progress", middleware.JWTMiddleware())
 	progressApi.Patch("/", app.updateProgress)
 	progressApi.Post("/badge", app.registerBadge)
+	//progress(admin)
+	progressAdminApi := api.Group("/progress-admin", middleware.JWTMiddleware(), middleware.AdminMiddleware())
+	progressAdminApi.Get("/badges", app.getAllBadges)
 }

@@ -17,7 +17,7 @@ func NewProgressReceiverRepository(db *pgxpool.Pool) *progressReceiverRepository
 	}
 }
 
-func (r *progressReceiverRepository) getBadges(ctx context.Context, id string) ([]string, error) {
+func (r *progressReceiverRepository) getUserBadges(ctx context.Context, id string) ([]string, error) {
 	var (
 		query = `
 		SELECT 
@@ -214,5 +214,35 @@ func (r *progressReceiverRepository) getXPLeaderboard(ctx context.Context, limit
 	}
 
 	result.Total = counter
+	return result, nil
+}
+
+func (r *progressReceiverRepository) getAllBadges(ctx context.Context) ([]Badge, error) {
+	var (
+		query = `
+		SELECT badge, description
+		FROM badges;
+		`
+		result []Badge
+	)
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var badge Badge
+		if err := rows.Scan(&badge.Badge, &badge.Description); err != nil {
+			return nil, err
+		}
+		result = append(result, badge)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }

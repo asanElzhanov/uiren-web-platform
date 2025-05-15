@@ -9,7 +9,9 @@ import (
 //go:generate mockgen -source service.go -destination service_mock.go -package progress
 
 type progressReceiverRepo interface {
-	getBadges(ctx context.Context, id string) ([]string, error)
+	getAllBadges(ctx context.Context) ([]Badge, error)
+
+	getUserBadges(ctx context.Context, id string) ([]string, error)
 	getXP(ctx context.Context, id string) (int, error)
 	getAchievementsProgress(ctx context.Context, id string) ([]UserAchievement, error)
 	getAchievementProgress(ctx context.Context, userID string, achID int) (UserAchievement, error)
@@ -19,7 +21,7 @@ type progressReceiverRepo interface {
 type progressUpdaterRepo interface {
 	beginTransaction(ctx context.Context) (transaction, error)
 
-	insertBadge(ctx context.Context, req InsertBadgeRequest) error
+	insertBadge(ctx context.Context, req Badge) error
 
 	addBadges(ctx context.Context, tx transaction, req AddBadgesRequest) error
 	addXP(ctx context.Context, tx transaction, req AddXPRequest) error
@@ -46,7 +48,7 @@ func NewProgressService(receiverRepo progressReceiverRepo, updaterRepo progressU
 
 func (s *ProgressService) GetBadges(ctx context.Context, user_id string) ([]string, error) {
 	logger.Info("ProgressService.GetBadges new request")
-	badges, err := s.receiverRepo.getBadges(ctx, user_id)
+	badges, err := s.receiverRepo.getUserBadges(ctx, user_id)
 	if err != nil {
 		logger.Error("ProgressService.GetBadges userProgressRepo.getBadges: ", err)
 		return nil, err
@@ -170,13 +172,19 @@ func (s *ProgressService) updateAchievementProgress(ctx context.Context, tx tran
 	return nil
 }
 
-func (s *ProgressService) RegisterNewBadge(ctx context.Context, req InsertBadgeRequest) error {
+func (s *ProgressService) RegisterNewBadge(ctx context.Context, req Badge) error {
 	logger.Info("ProgressService.RegisterNewBadge new request")
 	if err := s.updaterRepo.insertBadge(ctx, req); err != nil {
 		logger.Error("ProgressService.RegisterNewBadge insertBadge: ", err)
 		return err
 	}
 	return nil
+}
+
+func (s *ProgressService) GetAllBadges(ctx context.Context) ([]Badge, error) {
+	logger.Info("ProgressService.GetAllBadges new request")
+
+	return s.receiverRepo.getAllBadges(ctx)
 }
 
 func (s *ProgressService) GetXPLeaderboard(ctx context.Context, limit int) (XPLeaderboard, error) {

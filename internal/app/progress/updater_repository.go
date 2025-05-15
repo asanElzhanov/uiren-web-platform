@@ -99,7 +99,7 @@ func (r *progressUpdaterRepository) updateAchievementProgress(ctx context.Contex
 	return nil
 }
 
-func (r *progressUpdaterRepository) insertBadge(ctx context.Context, req InsertBadgeRequest) error {
+func (r *progressUpdaterRepository) insertBadge(ctx context.Context, req Badge) error {
 	var (
 		query = `
 		INSERT INTO

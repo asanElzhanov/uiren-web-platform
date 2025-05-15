@@ -61,7 +61,7 @@ type UpdateAchievementProgressRequest struct {
 }
 
 // for insert badges
-type InsertBadgeRequest struct {
+type Badge struct {
 	Badge       string `json:"badge"`
 	Description string `json:"description"`
 }

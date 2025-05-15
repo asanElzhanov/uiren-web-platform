@@ -26,7 +26,7 @@ func Test_ProgressService_GetBadges_success(t *testing.T) {
 		resp    = []string{"badge1", "badge2"}
 	)
 
-	repo.EXPECT().getBadges(ctx, userID).Return(resp, nil)
+	repo.EXPECT().getUserBadges(ctx, userID).Return(resp, nil)
 
 	badges, err := service.GetBadges(ctx, userID)
 	assert.NoError(t, err)
@@ -44,7 +44,7 @@ func Test_ProgressService_GetBadges_repoFailed(t *testing.T) {
 		errRepo = errors.New("db error")
 	)
 
-	repo.EXPECT().getBadges(ctx, userID).Return(nil, errRepo)
+	repo.EXPECT().getUserBadges(ctx, userID).Return(nil, errRepo)
 
 	_, err := service.GetBadges(ctx, userID)
 	assert.Equal(t, errRepo, err)
@@ -129,7 +129,7 @@ func Test_ProgressService_RegisterNewBadge_success(t *testing.T) {
 		ctrl    = gomock.NewController(t)
 		repo    = NewMockprogressUpdaterRepo(ctrl)
 		service = &ProgressService{updaterRepo: repo}
-		req     = InsertBadgeRequest{
+		req     = Badge{
 			Badge:       "badge1",
 			Description: "description1",
 		}
@@ -148,7 +148,7 @@ func Test_ProgressService_RegisterNewBadge_repoFailed(t *testing.T) {
 		ctrl    = gomock.NewController(t)
 		repo    = NewMockprogressUpdaterRepo(ctrl)
 		service = &ProgressService{updaterRepo: repo}
-		req     = InsertBadgeRequest{
+		req     = Badge{
 			Badge:       "badge1",
 			Description: "description1",
 		}
