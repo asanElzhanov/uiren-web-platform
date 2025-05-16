@@ -4,6 +4,7 @@ import "time"
 
 type PayloadDTO struct {
 	ID        string `json:"id"`
+	Email     string `json:"email"`
 	Username  string `json:"username"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`

@@ -23,6 +23,7 @@ func (maker *jwtMaker) NewToken(payload PayloadDTO) (string, error) {
 
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = payload.ID
+	claims["email"] = payload.Email
 	claims["username"] = payload.Username
 	claims["firstname"] = payload.Firstname
 	claims["lastname"] = payload.Lastname
