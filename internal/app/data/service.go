@@ -301,6 +301,7 @@ func (s *DataService) GetPublicExercise(ctx context.Context, code string) (exerc
 	err = json.Unmarshal([]byte(data), &exercise)
 	if err != nil {
 		logger.Error("DataService.GetPublicExercise json.Unmarshal: ", err)
+		return exercises.Exercise{}, err
 	}
 
 	return exercise, nil
