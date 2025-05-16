@@ -19,7 +19,7 @@ func (app *App) mainPageModules(c *fiber.Ctx) error {
 		return fiberInternalServerError(c)
 	}
 
-	return c.Status(fiber.StatusInternalServerError).JSON(modules)
+	return c.Status(fiber.StatusOK).JSON(modules)
 }
 
 func (app *App) getUserInfo(c *fiber.Ctx) error {
