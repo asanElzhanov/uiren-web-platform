@@ -89,7 +89,11 @@ type friendshipService interface {
 type dataService interface {
 	GetUserWithoutProgress(ctx context.Context, username string) (data.UserInfo, error)
 	GetUserWithProgress(ctx context.Context, username string) (data.UserInfo, error)
-	GetModules(ctx context.Context) (data.ModulesList, error)
+
+	GetPublicModules(ctx context.Context) (data.ModulesList, error)
+	GetPublicLesson(ctx context.Context, code string) (lessons.LessonDTO, error)
+	GetPublicExercise(ctx context.Context, code string) (exercises.Exercise, error)
+
 	GetXPLeaderboard(ctx context.Context) (data.XPLeaderboard, error)
 }
 
@@ -211,6 +215,8 @@ func (app *App) SetHandlers() {
 	//data
 	dataApi := api.Group("/data", middleware.JWTMiddleware())
 	dataApi.Get("/modules", app.mainPageModules)
+	dataApi.Get("lesson", app.getLessonToPass)
+	dataApi.Get("/exercise", app.getExerciseToPass)
 	dataApi.Get("/users", app.getUserInfo)
 	dataApi.Get("/xp-leaderboard", app.getXPLeaderboard)
 	//progress

@@ -3,6 +3,8 @@ package admin
 import (
 	"strconv"
 	"uiren/internal/app/data"
+	"uiren/internal/app/exercises"
+	"uiren/internal/app/lessons"
 	"uiren/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,13 +15,60 @@ func (app *App) mainPageModules(c *fiber.Ctx) error {
 		ctx = c.Context()
 	)
 
-	modules, err := app.dataService.GetModules(ctx)
+	modules, err := app.dataService.GetPublicModules(ctx)
 	if err != nil {
 		logger.Error("app.getModulesForMainPage dataService.GetModules: ", err)
 		return fiberInternalServerError(c)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(modules)
+}
+
+func (app *App) getLessonToPass(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+		req = c.Query("code")
+	)
+
+	if req == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", code required"})
+	}
+
+	lesson, err := app.dataService.GetPublicLesson(ctx, req)
+	if err != nil {
+		logger.Error("app.getLessonToPass dataService.GetPublicLesson: ", err)
+		switch err {
+		case lessons.ErrNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": lessons.ErrNotFound.Error()})
+		default:
+			return fiberInternalServerError(c)
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(lesson)
+}
+
+func (app *App) getExerciseToPass(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+		req = c.Query("code")
+	)
+	if req == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", code required"})
+	}
+
+	exercise, err := app.dataService.GetPublicExercise(ctx, req)
+	if err != nil {
+		logger.Error("app.getExerciseToPass dataService.GetPublicExercise: ", err)
+		switch err {
+		case exercises.ErrNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": exercises.ErrNotFound.Error()})
+		default:
+			return fiberInternalServerError(c)
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(exercise)
 }
 
 func (app *App) getUserInfo(c *fiber.Ctx) error {

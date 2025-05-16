@@ -164,6 +164,8 @@ func main() {
 		config.GetValue(dbRedisDataTTLKey).Duration(),
 	)
 	dataService.WithProgressService(progressService, config.GetValue(xpLeaderboardLimitKey).Int())
+	dataService.WithLessonService(lessonService)
+	dataService.WithExerciseService(exerciseService)
 
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)

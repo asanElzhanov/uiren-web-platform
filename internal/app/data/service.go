@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+	"uiren/internal/app/exercises"
+	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/progress"
 	"uiren/internal/app/users"
@@ -25,6 +27,14 @@ type modulesService interface {
 	GetModulesList(ctx context.Context) ([]modules.Module, error)
 }
 
+type lessonsService interface {
+	GetLesson(ctx context.Context, code string) (lessons.LessonDTO, error)
+}
+
+type exerciseService interface {
+	GetExercise(ctx context.Context, code string) (exercises.Exercise, error)
+}
+
 type redisClient interface {
 	Set(ctx context.Context, key string, value interface{}, ttl *time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
@@ -39,6 +49,8 @@ type DataService struct {
 	redisClient        redisClient
 	userService        userService
 	modulesService     modulesService
+	lessonsService     lessonsService
+	exerciseService    exerciseService
 	progressService    progressService
 	dataTTL            time.Duration
 	xpLeaderboardLimit int
@@ -65,6 +77,14 @@ func (s *DataService) WithProgressService(progressService progressService, xpLea
 		xpLeaderboardLimit = 20
 	}
 	s.xpLeaderboardLimit = xpLeaderboardLimit
+}
+
+func (s *DataService) WithLessonService(lessonsService lessonsService) {
+	s.lessonsService = lessonsService
+}
+
+func (s *DataService) WithExerciseService(exerciseService exerciseService) {
+	s.exerciseService = exerciseService
 }
 
 // todo: write tests
@@ -115,7 +135,7 @@ func (s *DataService) GetUserWithoutProgress(ctx context.Context, username strin
 }
 
 // todo: write tests
-func (s *DataService) GetModules(ctx context.Context) (ModulesList, error) {
+func (s *DataService) GetPublicModules(ctx context.Context) (ModulesList, error) {
 	logger.Info("DataService.GetModules new request")
 	var modulesList []modules.Module
 	data, err := s.redisClient.Get(ctx, getModulesCacheKey)
@@ -198,4 +218,90 @@ func (s *DataService) GetXPLeaderboard(ctx context.Context) (XPLeaderboard, erro
 	}
 
 	return XPLeaderboard{Board: leaderboard}, nil
+}
+
+// todo write tests
+func (s *DataService) GetPublicLesson(ctx context.Context, code string) (lessons.LessonDTO, error) {
+	logger.Info("DataService.GetPublicLesson new request")
+	var lesson lessons.LessonDTO
+
+	key := generateLessonKey(code)
+	data, err := s.redisClient.Get(ctx, key)
+
+	if err != nil {
+		if err != redis.Nil {
+			logger.Error("DataService.GetPublicLesson redisClient.Get: ", err)
+			return lessons.LessonDTO{}, err
+		}
+
+		lesson, err = s.lessonsService.GetLesson(ctx, code)
+		if err != nil {
+			logger.Error("DataService.GetPublicLesson lessonsService.GetLesson: ", err)
+			return lessons.LessonDTO{}, err
+		}
+
+		newData, err := json.Marshal(lesson)
+		if err != nil {
+			logger.Error("DataService.GetPublicLesson json.Marshal: ", err)
+			return lessons.LessonDTO{}, err
+		}
+
+		err = s.redisClient.Set(ctx, key, newData, &s.dataTTL)
+		if err != nil {
+			logger.Error("DataService.GetPublicLesson redisClient.Set: ", err)
+		}
+
+		return lesson, nil
+	}
+
+	err = json.Unmarshal([]byte(data), &lesson)
+	if err != nil {
+		logger.Error("DataService.GetPublicLesson json.Unmarshal: ", err)
+		return lessons.LessonDTO{}, err
+	}
+
+	return lesson, nil
+}
+
+//todo write tests
+
+func (s *DataService) GetPublicExercise(ctx context.Context, code string) (exercises.Exercise, error) {
+	logger.Info("DataService.GetPublicExercise new requst")
+	var exercise exercises.Exercise
+
+	key := generateExerciseKey(code)
+	data, err := s.redisClient.Get(ctx, key)
+
+	if err != nil {
+		if err != redis.Nil {
+			logger.Error("DataService.GetPublicExercise redisClient.Get: ", err)
+			return exercises.Exercise{}, err
+		}
+
+		exercise, err = s.exerciseService.GetExercise(ctx, code)
+		if err != nil {
+			logger.Error("DataService.GetPublicExercise lessonsService.GetLesson: ", err)
+			return exercises.Exercise{}, err
+		}
+
+		newData, err := json.Marshal(exercise)
+		if err != nil {
+			logger.Error("DataService.GetPublicExercise json.Marshal: ", err)
+			return exercises.Exercise{}, err
+		}
+
+		err = s.redisClient.Set(ctx, key, newData, &s.dataTTL)
+		if err != nil {
+			logger.Error("DataService.GetPublicExercise redisClient.Set: ", err)
+		}
+
+		return exercise, nil
+	}
+
+	err = json.Unmarshal([]byte(data), &exercise)
+	if err != nil {
+		logger.Error("DataService.GetPublicExercise json.Unmarshal: ", err)
+	}
+
+	return exercise, nil
 }
