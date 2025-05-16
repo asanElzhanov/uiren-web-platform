@@ -56,7 +56,7 @@ func (r *achievementRepository) getAllAchievements(ctx context.Context) ([]achie
 			&achievement.id,
 			&achievement.name,
 			&achievement.createdAt,
-			&achievement.deletedAt,
+			&achievement.updatedAt,
 		); err != nil {
 			return nil, err
 		}
