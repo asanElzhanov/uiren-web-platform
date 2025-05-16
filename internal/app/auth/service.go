@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -10,7 +11,11 @@ import (
 	jwt_maker "uiren/internal/infrastracture/jwt"
 	yandex_sender "uiren/internal/infrastracture/mail/yandex"
 	"uiren/pkg/logger"
+
+	"github.com/redis/go-redis/v9"
 )
+
+//go:generate mockgen -source service.go -destination service_mock.go -package auth
 
 type userService interface {
 	GetUserForLogin(ctx context.Context, indetifier string) (users.UserDTO, error)
@@ -22,16 +27,24 @@ type jwtMaker interface {
 	NewToken(payload jwt_maker.PayloadDTO) (string, error)
 }
 
+type redisClient interface {
+	Set(ctx context.Context, key string, value interface{}, ttl *time.Duration) error
+	Get(ctx context.Context, key string) (string, error)
+	Delete(ctx context.Context, key string) error
+}
+
 type verificationCodeRepository interface {
 	createVerificationCode(ctx context.Context, req CreateVerificationCodeRequest) error
 	getVerificationCode(ctx context.Context, username string) (Verification, error)
 }
 
 type AuthService struct {
-	userService  userService
-	jwtMaker     jwtMaker
-	verifRepo    verificationCodeRepository
-	verifCodeTTL time.Duration
+	userService     userService
+	jwtMaker        jwtMaker
+	verifRepo       verificationCodeRepository
+	verifCodeTTL    time.Duration
+	refreshTokenTTL time.Duration
+	redisClient     redisClient
 }
 
 func NewAuthService(userService userService, jwtMaker jwtMaker, verifRepo verificationCodeRepository) *AuthService {
@@ -46,35 +59,43 @@ func (s *AuthService) SetVerificationCodeTTL(verifCodeTTL time.Duration) {
 	s.verifCodeTTL = verifCodeTTL
 }
 
-func (s *AuthService) SignIn(ctx context.Context, params LoginParams) (string, error) {
+func (s *AuthService) SetRefreshTokenTTL(refreshTokenTTL time.Duration) {
+	s.refreshTokenTTL = refreshTokenTTL
+}
+
+func (s *AuthService) WithRedisClient(redisClient redisClient) {
+	s.redisClient = redisClient
+}
+
+func (s *AuthService) SignIn(ctx context.Context, params LoginParams) (string, string, error) {
 	logger.Info("AuthService.SignIn new request")
 
 	user, err := s.userService.GetUserForLogin(ctx, params.Identificator)
 	if err != nil {
 		logger.Error("AuthService.SignIn getUser: ", err)
 		if errors.Is(err, users.ErrUserNotFound) {
-			return "", ErrInvalidCredentials
+			return "", "", ErrInvalidCredentials
 		}
-		return "", err
+		return "", "", err
 	}
 
-	if !hasher.BcryptComparePasswordAndHash(params.Password, user.Password) {
+	if err := hasher.BcryptComparePasswordAndHash(params.Password, user.Password); err != nil {
 		logger.Error("AuthService.SignIn BcryptComparePasswordAndHash: ", err)
-		return "", ErrInvalidCredentials
+		if hasher.BcryptIsInvalidPasswordError(err) {
+			return "", "", ErrInvalidCredentials
+		}
+		return "", "", err
 	}
 
-	token, err := s.jwtMaker.NewToken(jwt_maker.PayloadDTO{
+	payload := jwt_maker.PayloadDTO{
+		ID:        user.ID,
+		Email:     user.Email,
 		Username:  user.Username,
 		Firstname: user.Firstname,
 		Lastname:  user.Lastname,
 		IsAdmin:   user.IsAdmin,
-	})
-	if err != nil {
-		logger.Error("AuthService.SignIn NewToken: ", err)
-		return "", err
 	}
-
-	return token, nil
+	return s.generateTokens(ctx, payload)
 }
 
 func (s *AuthService) Register(ctx context.Context, params RegisterParams) (string, error) {
@@ -137,4 +158,61 @@ func (s *AuthService) VerifyUser(ctx context.Context, username, code string) err
 	}
 
 	return s.userService.EnableUser(ctx, username)
+}
+
+func (s *AuthService) RefreshToken(ctx context.Context, token string) (string, string, error) {
+	logger.Info("AuthService.RefreshToken new request")
+	if s.redisClient == nil {
+		return "", "", fmt.Errorf("redis client is not initialized")
+	}
+	key := refreshTokenKey(token)
+
+	payloadJSON, err := s.redisClient.Get(ctx, key)
+	if err != nil {
+		logger.Error("AuthService.RefreshToken redisClient.Get: ", err)
+		if errors.Is(err, redis.Nil) {
+			return "", "", ErrRefreshTokenNotFound
+		}
+		return "", "", err
+	}
+
+	var payload jwt_maker.PayloadDTO
+	if err := json.Unmarshal([]byte(payloadJSON), &payload); err != nil {
+		logger.Error("AuthService.RefreshToken json.Unmarshal: ", err)
+		return "", "", err
+	}
+
+	if err := s.redisClient.Delete(ctx, key); err != nil {
+		logger.Error("AuthService.RefreshToken redisClient.Delete: ", err)
+	}
+
+	return s.generateTokens(ctx, payload)
+}
+
+func (s *AuthService) generateTokens(ctx context.Context, payload jwt_maker.PayloadDTO) (string, string, error) {
+	token, err := s.jwtMaker.NewToken(payload)
+	if err != nil {
+		logger.Error("AuthService.generateTokens NewToken: ", err)
+		return "", "", err
+	}
+
+	refreshToken := ""
+
+	if s.redisClient != nil {
+		refreshToken = generateAlphanumericCode(50)
+		key := refreshTokenKey(refreshToken)
+
+		payloadJSON, err := json.Marshal(payload)
+		if err != nil {
+			logger.Error("AuthService.generateTokens json.Marshal: ", err)
+			return "", "", err
+		}
+
+		if err := s.redisClient.Set(ctx, key, string(payloadJSON), &s.refreshTokenTTL); err != nil {
+			logger.Error("AuthService.generateTokens redisClient.Set: ", err)
+			return "", "", err
+		}
+	}
+
+	return token, refreshToken, nil
 }

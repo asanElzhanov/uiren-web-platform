@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"errors"
 	"fmt"
 	"uiren/internal/app/auth"
 	"uiren/internal/app/users"
@@ -27,19 +26,22 @@ func (app *App) signIn(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest})
 	}
 
-	token, err := app.authService.SignIn(ctx, auth.LoginParams{
+	accessToken, refreshToken, err := app.authService.SignIn(ctx, auth.LoginParams{
 		Identificator: params.Identificator,
 		Password:      params.Password,
 	})
 
 	if err != nil {
-		if errors.Is(err, auth.ErrInvalidCredentials) {
-			logger.Error("app.signIn error: ", ErrInvalidCredentials)
+		logger.Error("app.signIn error: ", err)
+		switch err {
+		case auth.ErrInvalidCredentials:
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": ErrInvalidCredentials})
+		default:
+			return fiberInternalServerError(c)
 		}
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"token": token})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"access_token": accessToken, "refresh_token": refreshToken})
 }
 
 func (app *App) register(c *fiber.Ctx) error {
@@ -86,10 +88,42 @@ func (app *App) verification(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrVerificationInvalid.Error()})
 		case auth.ErrVerificationExpired:
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrVerificationExpired.Error()})
+		case auth.ErrVerificationNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": auth.ErrVerificationNotFound.Error()})
 		default:
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrInternalServerError})
+			return fiberInternalServerError(c)
 		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": fmt.Sprintf("%s verified", username)})
+}
+
+func (app *App) refreshToken(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+		req RefreshTokenParams
+	)
+
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("app.refreshToken BodyParser: ", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest})
+	}
+	if req.Token == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "refresh_token required"})
+	}
+
+	accessToken, refreshToken, err := app.authService.RefreshToken(ctx, req.Token)
+	if err != nil {
+		logger.Error("app.refreshToken error: ", err)
+		switch err {
+		case auth.ErrRefreshTokenNotFound:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrRefreshTokenNotFound.Error()})
+		case auth.ErrInvalidToken:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": auth.ErrInvalidToken.Error()})
+		default:
+			return fiberInternalServerError(c)
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"access_token": accessToken, "refresh_token": refreshToken})
 }

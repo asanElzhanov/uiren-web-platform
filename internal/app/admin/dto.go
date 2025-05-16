@@ -2,15 +2,6 @@ package admin
 
 // users
 type (
-	User struct {
-		ID        string `json:"id"`
-		Username  string `json:"username"`
-		Firstname string `json:"firstname"`
-		Lastname  string `json:"lastname"`
-		Email     string `json:"email"`
-		Phone     string `json:"phone"`
-	}
-
 	CreateUserReq struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -30,5 +21,30 @@ type (
 	SignInParams struct {
 		Identificator string `json:"identificator"`
 		Password      string `json:"password"`
+	}
+
+	RefreshTokenParams struct {
+		Token string `json:"refresh_token"`
+	}
+)
+
+// achievements
+type (
+	CreateAchievementRequest struct {
+		Name string `json:"name"`
+	}
+
+	UpdateAchievementRequest struct {
+		ID      int    `json:"id"`
+		NewName string `json:"name"`
+	}
+	AddAchievementLevelRequest struct {
+		AchID       int    `json:"achievement_id"`
+		Description string `json:"description"`
+		Threshold   int    `json:"threshold"`
+	}
+	DeleteAchievementLevelRequest struct {
+		AchID int `json:"achievement_id"`
+		Level int `json:"level"`
 	}
 )

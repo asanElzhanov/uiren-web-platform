@@ -258,3 +258,81 @@ func (r *userRepository) enableUser(ctx context.Context, username string) error 
 	_, err := r.db.Exec(ctx, query, username)
 	return err
 }
+
+func (r *userRepository) checkUserExists(ctx context.Context, username string) error {
+	var (
+		query = `
+		SELECT 
+			true
+		FROM 
+			users
+		WHERE 
+			username = $1 
+			AND is_active = true 
+			AND deleted_at IS NULL;
+		`
+		exists bool
+	)
+
+	if err := r.db.QueryRow(ctx, query, username).Scan(&exists); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrUserNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (r *userRepository) getAllUsers(ctx context.Context) ([]UserDTO, error) {
+	var (
+		query = `
+		SELECT 
+			id,
+			username,
+			email,
+			password,
+			first_name,
+			last_name,
+			phone,
+			is_active,
+			is_admin,
+			created_at,
+			updated_at
+		FROM 
+			users
+		WHERE 
+			is_active = true 
+			AND deleted_at IS NULL;
+		`
+	)
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []UserDTO
+	for rows.Next() {
+		var user user
+		if err := rows.Scan(
+			&user.id,
+			&user.username,
+			&user.email,
+			&user.password,
+			&user.firstname,
+			&user.lastname,
+			&user.phone,
+			&user.isActive,
+			&user.isAdmin,
+			&user.createdAt,
+			&user.updatedAt,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, user.ToDTO())
+	}
+
+	return users, nil
+}

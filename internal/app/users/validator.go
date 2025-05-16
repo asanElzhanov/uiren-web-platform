@@ -71,6 +71,10 @@ func isValidPhone(phone, region string) bool {
 		return false
 	}
 
+	if !phonenumbers.IsValidNumberForRegion(num, region) {
+		return false
+	}
+
 	return true
 }
 
@@ -79,11 +83,15 @@ func isValidPassword(password string) bool {
 		return false
 	}
 
-	var hasLetter, hasDigit, hasSpecial bool
+	var hasDigit, hasSpecial, hasLowerCase, hasUpperCase bool
 	for _, ch := range password {
 		switch {
 		case unicode.IsLetter(ch):
-			hasLetter = true
+			if unicode.IsLower(ch) {
+				hasLowerCase = true
+			} else if unicode.IsUpper(ch) {
+				hasUpperCase = true
+			}
 		case unicode.IsDigit(ch):
 			hasDigit = true
 		case isSpecialChar(ch):
@@ -91,7 +99,7 @@ func isValidPassword(password string) bool {
 		}
 	}
 
-	return hasLetter && hasDigit && hasSpecial
+	return hasLowerCase && hasUpperCase && hasDigit && hasSpecial
 }
 
 func isSpecialChar(ch rune) bool {

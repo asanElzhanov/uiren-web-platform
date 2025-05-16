@@ -15,15 +15,15 @@ type lesson struct {
 }
 
 type LessonDTO struct {
-	Code        string
-	Title       string
-	Description string
-	Exercises   []exercises.ExerciseDTO
-	CreatedAt   time.Time
-	DeletedAt   time.Time
+	Code        string               `json:"code"`
+	Title       string               `json:"title"`
+	Description string               `json:"description"`
+	Exercises   []exercises.Exercise `json:"exercises"`
+	CreatedAt   time.Time            `json:"created_at"`
+	DeletedAt   time.Time            `json:"deleted_at"`
 }
 
-func (lesson lesson) toDTO(exercises []exercises.ExerciseDTO) LessonDTO {
+func (lesson lesson) toDTO(exercises []exercises.Exercise) LessonDTO {
 	var lessonDeletedAt time.Time
 	if lesson.DeletedAt != nil {
 		lessonDeletedAt = *lesson.DeletedAt
@@ -41,12 +41,15 @@ func (lesson lesson) toDTO(exercises []exercises.ExerciseDTO) LessonDTO {
 // for repo
 
 type CreateLessonDTO struct {
-	Code        string
-	Title       string
-	Description string
+	Code        string     `bson:"code" json:"code"`
+	Title       string     `bson:"title" json:"title"`
+	Description string     `bson:"description" json:"description"`
+	Exercises   []string   `bson:"exercises"`
+	CreatedAt   time.Time  `bson:"created_at"`
+	DeletedAt   *time.Time `bson:"deleted_at"`
 }
 
 type UpdateLessonDTO struct {
-	Title       string
-	Description string
+	Title       *string `bson:"title" json:"title"`
+	Description *string `bson:"description" json:"description"`
 }

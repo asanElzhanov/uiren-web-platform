@@ -29,7 +29,7 @@ func init() {
 
 	err := ParseConfig()
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal("config error: ", err)
 	}
 }
 

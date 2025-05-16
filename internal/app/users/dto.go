@@ -3,9 +3,16 @@ package users
 import (
 	"database/sql"
 	"time"
+	"uiren/internal/app/progress"
 
 	"github.com/google/uuid"
 )
+
+type UserProgress struct {
+	Badges       []string                   `json:"badges"`
+	XP           int                        `json:"xp"`
+	Achievements []progress.UserAchievement `json:"achievements"`
+}
 
 type user struct {
 	id        uuid.UUID
@@ -23,18 +30,18 @@ type user struct {
 }
 
 type UserDTO struct {
-	ID        string
-	Username  string
-	Email     string
-	Password  string
-	Firstname string
-	Lastname  string
-	Phone     string
-	IsActive  bool
-	IsAdmin   bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt time.Time
+	ID        string    `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	Firstname string    `json:"first_name"`
+	Lastname  string    `json:"last_name"`
+	Phone     string    `json:"phone"`
+	IsActive  bool      `json:"is_active"`
+	IsAdmin   bool      `json:"is_admin"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt time.Time `json:"deleted_at"`
 }
 
 func (user user) ToDTO() UserDTO {

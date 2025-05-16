@@ -1,169 +1,120 @@
 package admin
 
-/*
 import (
-	"encoding/csv"
-	"encoding/json"
-	"fmt"
+	"strconv"
 	"uiren/internal/app/data"
+	"uiren/internal/app/exercises"
+	"uiren/internal/app/lessons"
 	"uiren/pkg/logger"
 
-	"io"
-	"net/http"
-	"sort"
-	"strconv"
-	"time"
+	"github.com/gofiber/fiber/v2"
 )
 
-func (app *App) exportData(w http.ResponseWriter, r *http.Request) {
+func (app *App) mainPageModules(c *fiber.Ctx) error {
 	var (
-		dictIDString = r.URL.Query().Get("dict_id")
-		ctx          = r.Context()
+		ctx = c.Context()
 	)
-	if dictIDString == "" {
-		logger.Error("Нет dict_id")
-		http.Error(w, "dictID required", http.StatusBadRequest)
-		return
-	}
-	dictID, err := strconv.Atoi(dictIDString)
+
+	modules, err := app.dataService.GetPublicModules(ctx)
 	if err != nil {
-		logger.Error("Ошибка Atoi: ", err)
-		http.Error(w, "bad request", http.StatusBadRequest)
-		return
+		logger.Error("app.getModulesForMainPage dataService.GetModules: ", err)
+		return fiberInternalServerError(c)
 	}
 
-	w.Header().Set("Content-Disposition", "attachment; filename=data.csv")
-	w.Header().Set("Content-Type", "text/csv")
-
-	/*
-		4 - кадастриал
-		1- цвета
-		2 - тест всего
-		5 - тест адресов
-*/ /*
-	dataList, err := app.dataService.GetDictionaryData(ctx, dictID)
-	if err != nil {
-		logger.Error("Ошибка GetDictionaryData: ", err)
-		http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-		return
-	}
-	if len(dataList) == 0 {
-		logger.Error("Нет данных")
-		return
-	}
-	metadataSortOrder, err := app.metadataService.GetMetadataSortOrder(ctx, dictID)
-	if err != nil {
-		logger.Error("Ошибка GetMetadata: ", err)
-		http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-		return
-	}
-	keys := make([]string, 0, len(dataList[0].Data))
-	for key := range dataList[0].Data {
-		keys = append(keys, key)
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		return metadataSortOrder[keys[i]] < metadataSortOrder[keys[j]]
-	})
-	writer := csv.NewWriter(w)
-	defer writer.Flush()
-
-	writer.Write(keys)
-	for _, dataEntity := range dataList {
-		row := make([]string, 0, len(dataEntity.Data))
-		for _, key := range keys {
-			if dataEntity.Data[key] == nil {
-				row = append(row, "")
-			} else {
-				row = append(row, fmt.Sprintf("%v", dataEntity.Data[key]))
-
-			}
-		}
-		writer.Write(row)
-	}
+	return c.Status(fiber.StatusOK).JSON(modules)
 }
 
-func (app *App) importData(w http.ResponseWriter, r *http.Request) {
+func (app *App) getLessonToPass(c *fiber.Ctx) error {
 	var (
-		dictIDString = r.URL.Query().Get("dict_id")
-		ctx          = r.Context()
+		ctx = c.Context()
+		req = c.Query("code")
 	)
-	dictID, err := strconv.Atoi(dictIDString)
+
+	if req == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", code required"})
+	}
+
+	lesson, err := app.dataService.GetPublicLesson(ctx, req)
 	if err != nil {
-		logger.Error("Ошибка Atoi: ", err)
-		http.Error(w, "bad request", http.StatusInternalServerError)
-		return
-	}
-
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		logger.Error("Ошибка FormFile: ", err)
-		http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-		return
-	}
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	headers, err := reader.Read()
-	if err != nil {
-		logger.Error("Ошибка Read(заголовки): ", err)
-		http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-		return
-	}
-
-	/*
-		4 - кадастриал
-		1- цвета
-		2 - тест всего
-		5 - тест адресов
-*/ /*
-	metadataTypes, err := app.metadataService.GetMetadataTypes(ctx, dictID)
-	if err != nil {
-		logger.Error("Ошибка GetMetadataTypes: ", err)
-		http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-		return
-	}
-
-	var dictDataList []data.DictionaryData
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
+		logger.Error("app.getLessonToPass dataService.GetPublicLesson: ", err)
+		switch err {
+		case lessons.ErrNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": lessons.ErrNotFound.Error()})
+		default:
+			return fiberInternalServerError(c)
 		}
-		if err != nil {
-			logger.Error("Ошибка Read: ", err)
-			http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-			return
-		}
-
-		var dictData data.DictionaryData
-		dictData.Data = make(map[string]interface{})
-		for i, value := range record {
-			dictData.Data[headers[i]] = value
-		}
-		if err := dictData.NormalizeTypes(metadataTypes); err != nil {
-			logger.Error("Ошибка Unmarshal: ", err)
-			http.Error(w, "bad request", http.StatusBadRequest)
-			return
-		}
-		dictData.SystemData.Created_at = float64(time.Now().Unix())
-		dictDataList = append(dictDataList, dictData)
 	}
 
-	for _, dictData := range dictDataList {
-		id, err := app.dataService.InsertData(ctx, dictID, dictData)
-		if err != nil {
-			logger.Error("Ошибка InsertData: ", err)
-			http.Error(w, "Внутренняя ошибка", http.StatusBadRequest)
-			return
-		}
-		logger.Error(id)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(dictDataList); err != nil {
-		logger.Error("Ошибка Encode: ", err)
-		http.Error(w, "Внутренняя ошибка", http.StatusInternalServerError)
-		return
-	}
+	return c.Status(fiber.StatusOK).JSON(lesson)
 }
-*/
+
+func (app *App) getExerciseToPass(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+		req = c.Query("code")
+	)
+	if req == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", code required"})
+	}
+
+	exercise, err := app.dataService.GetPublicExercise(ctx, req)
+	if err != nil {
+		logger.Error("app.getExerciseToPass dataService.GetPublicExercise: ", err)
+		switch err {
+		case exercises.ErrNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": exercises.ErrNotFound.Error()})
+		default:
+			return fiberInternalServerError(c)
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(exercise)
+}
+
+func (app *App) getUserInfo(c *fiber.Ctx) error {
+	var (
+		ctx               = c.Context()
+		username          = c.Query("username")
+		withProgressQuery = c.Query("withProgress")
+		err               error
+		userInfo          data.UserInfo
+	)
+	if username == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", username required"})
+	}
+	if withProgressQuery == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", withProgress required"})
+	}
+
+	withProgress, err := strconv.ParseBool(withProgressQuery)
+	if err != nil {
+		logger.Error("app.getUserByUsername ParseBool: ", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", withProgress invalid format"})
+	}
+
+	if withProgress {
+		userInfo, err = app.dataService.GetUserWithProgress(ctx, username)
+	} else {
+		userInfo, err = app.dataService.GetUserWithoutProgress(ctx, username)
+	}
+	if err != nil {
+		logger.Error("app.getUserByUsername dataService.GetUserWithProgress: ", err)
+		return getUserError(c, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(userInfo)
+}
+
+func (app *App) getXPLeaderboard(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	leaderboard, err := app.dataService.GetXPLeaderboard(ctx)
+	if err != nil {
+		logger.Error("app.getXPLeaderboard dataService.GetXPLeaderboard: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(leaderboard.Board)
+}

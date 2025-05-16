@@ -31,35 +31,24 @@ func (app *App) createUser(c *fiber.Ctx) error {
 }
 
 func (app *App) getUser(c *fiber.Ctx) error {
-	//todo поменять просто на getBYid
 	var (
-		ctx         = c.Context()
-		indentifier = c.Query("identifier")
+		ctx    = c.Context()
+		userID = c.Params("id")
 	)
 	logger.Info("app.getUser handler")
 
-	if indentifier == "" {
-		logger.Error("app.getUser identifier required")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", identifier required"})
-	}
-	userDTO, err := app.userService.GetUserForLogin(ctx, indentifier)
-	if err != nil {
-		logger.Error("app.getUser app.userService.GetUserForLogin: ", err)
-		if err == users.ErrUserNotFound {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": ErrUserNotFound})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+	if userID == "" {
+		logger.Error("app.getUser: id required")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", id required"})
 	}
 
-	resp := User{
-		ID:        userDTO.ID,
-		Username:  userDTO.Username,
-		Firstname: userDTO.Firstname,
-		Lastname:  userDTO.Lastname,
-		Email:     userDTO.Email,
-		Phone:     userDTO.Phone,
+	user, err := app.userService.GetUserByID(ctx, userID)
+	if err != nil {
+		logger.Error("app.getUser GetUser: ", err)
+		return getUserError(c, err)
 	}
-	return c.JSON(resp)
+
+	return c.Status(fiber.StatusOK).JSON(user)
 }
 
 func (app *App) updateUser(c *fiber.Ctx) error {
@@ -96,7 +85,7 @@ func (app *App) updateUser(c *fiber.Ctx) error {
 		case users.ErrIncorrectPhone:
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": users.ErrIncorrectPhone.Error()})
 		default:
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+			return fiberInternalServerError(c)
 		}
 	}
 
@@ -107,6 +96,21 @@ func (app *App) updateUser(c *fiber.Ctx) error {
 		"phone":       updatedUser.Phone,
 		"update_time": updatedUser.UpdatedAt,
 	})
+}
+
+func (app *App) getAllUsers(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+	logger.Info("app.getAllUsers handler")
+
+	users, err := app.userService.GetAllUsers(ctx)
+	if err != nil {
+		logger.Error("app.getAllUsers GetAllUsers: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(users)
 }
 
 func returnCreateUserError(c *fiber.Ctx, err error) error {
@@ -122,6 +126,15 @@ func returnCreateUserError(c *fiber.Ctx, err error) error {
 	case users.ErrEmailExists:
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": users.ErrEmailExists.Error()})
 	default:
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+		return fiberInternalServerError(c)
+	}
+}
+
+func getUserError(c *fiber.Ctx, err error) error {
+	switch err {
+	case users.ErrUserNotFound:
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": users.ErrUserNotFound.Error()})
+	default:
+		return fiberInternalServerError(c)
 	}
 }

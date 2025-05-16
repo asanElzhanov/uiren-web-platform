@@ -83,39 +83,24 @@ ALTER TABLE ONLY public.users
 
 CREATE TABLE achievements (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(60) NOT NULL,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    deleted_at timestamp without time zone
+    name VARCHAR(60) NOT NULL UNIQUE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE
 );
 
 CREATE TABLE achievements_levels (
-    id SERIAL PRIMARY KEY,
     achievement_id INT NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
-    level INT NOT NULL,
+    level INT NOT NULL CHECK (level > 0),
     description VARCHAR(100) NOT NULL,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    deleted_at timestamp without time zone
-);
-CREATE TABLE users_achievements (
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    achievement_id INT NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
-    level INT NOT NULL DEFAULT 1,
-    progress INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, achievement_id),
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    deleted_at timestamp without time zone
+    threshold INT NOT NULL CHECK (threshold >= 0), -- Требуемый прогресс
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
+	PRIMARY KEY (achievement_id, level)
 );
 
-ALTER TABLE achievements_levels ADD COLUMN to_complete INT NOT NULL;
 
-
-INSERT INTO users_achievements (user_id, achievement_id, progress)
-VALUES ('52d4abf7-a846-48d1-93f3-d651e41beda7', 1, 1)
-ON CONFLICT (user_id, achievement_id) DO UPDATE
-SET progress = users_achievements.progress + EXCLUDED.progress;
 
 
 CREATE TABLE users_verification_codes (

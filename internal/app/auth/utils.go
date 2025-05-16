@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -15,4 +16,8 @@ func generateAlphanumericCode(length int) string {
 		code[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(code)
+}
+
+func refreshTokenKey(refreshToken string) string {
+	return fmt.Sprintf("auth:refresh:%s", refreshToken)
 }
