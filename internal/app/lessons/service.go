@@ -21,10 +21,12 @@ type repository interface {
 	deleteExerciseFromList(ctx context.Context, code, exerciseCode string) error
 
 	getAllLessons(ctx context.Context) ([]lesson, error)
+	lessonExists(ctx context.Context, code string) (bool, error)
 }
 
 type exerciseService interface {
 	GetExercisesByCodes(ctx context.Context, codes []string) ([]exercises.Exercise, error)
+	ExerciseExists(ctx context.Context, code string) (bool, error)
 }
 
 type LessonsService struct {
@@ -117,7 +119,16 @@ func (s LessonsService) DeleteLesson(ctx context.Context, code string) error {
 func (s LessonsService) AddExerciseToList(ctx context.Context, code, exerciseCode string) error {
 	logger.Info("LessonsService.AddExerciseToList new request")
 
-	//todo check if exists
+	exists, err := s.exerciseService.ExerciseExists(ctx, exerciseCode)
+	if err != nil {
+		logger.Error("LessonsService.AddExerciseToList exerciseService.ExerciseExists: ", err)
+		return err
+	}
+
+	if !exists {
+		return exercises.ErrNotFound
+	}
+
 	if err := s.repo.addExerciseToList(ctx, code, exerciseCode); err != nil {
 		logger.Error("LessonsService.AddExerciseToList repo.addExerciseToList: ", err)
 		return err
@@ -157,4 +168,17 @@ func (s LessonsService) GetAllLessonsWithExercises(ctx context.Context) ([]Lesso
 		result = append(result, lesson.toDTO(exercises))
 	}
 	return result, nil
+}
+
+// todo write tests
+func (s LessonsService) LessonExists(ctx context.Context, code string) (bool, error) {
+	logger.Info("LessonsService.LessonExists new request")
+
+	exists, err := s.repo.lessonExists(ctx, code)
+	if err != nil {
+		logger.Error("LessonsService.LessonExists repo.lessonExists: ", err)
+		return false, err
+	}
+
+	return exists, nil
 }

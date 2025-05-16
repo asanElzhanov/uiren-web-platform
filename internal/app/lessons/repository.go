@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -209,4 +210,18 @@ func (r *lessonRepository) getAllLessons(ctx context.Context) ([]lesson, error) 
 	}
 
 	return result, nil
+}
+
+func (r *lessonRepository) lessonExists(ctx context.Context, code string) (bool, error) {
+	var (
+		collection = r.db.Collection(lessonsCollection)
+		filter     = bson.M{"code": code, "deleted_at": nil}
+	)
+
+	count, err := collection.CountDocuments(ctx, filter, options.Count().SetLimit(1))
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }

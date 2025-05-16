@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"uiren/internal/app/exercises"
 	"uiren/internal/app/lessons"
 	"uiren/pkg/logger"
 
@@ -133,6 +134,8 @@ func (app *App) addExerciseToList(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": lessons.ErrNotFound.Error()})
 		case lessons.ErrExerciseAlreadyInSet:
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": lessons.ErrExerciseAlreadyInSet.Error()})
+		case exercises.ErrNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": exercises.ErrNotFound.Error()})
 		default:
 			return fiberInternalServerError(c)
 		}

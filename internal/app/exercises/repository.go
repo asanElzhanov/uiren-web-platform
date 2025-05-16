@@ -193,3 +193,17 @@ func (r *exercisesRepository) getAllExercises(ctx context.Context) ([]Exercise, 
 
 	return result, nil
 }
+
+func (r *exercisesRepository) exerciseExists(ctx context.Context, code string) (bool, error) {
+	var (
+		collection = r.db.Collection(exercisesCollection)
+		filter     = bson.M{"code": code, "deleted_at": nil}
+	)
+
+	count, err := collection.CountDocuments(ctx, filter, options.Count().SetLimit(1))
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
