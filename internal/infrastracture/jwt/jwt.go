@@ -24,7 +24,7 @@ func (maker *jwtMaker) NewToken(payload PayloadDTO) (string, error) {
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = payload.ID
 	claims["username"] = payload.Username
-	claims["fistname"] = payload.Firstname
+	claims["firstname"] = payload.Firstname
 	claims["lastname"] = payload.Lastname
 	claims["isAdmin"] = payload.IsAdmin
 	claims["exp"] = time.Now().Add(payload.Duration).Unix()
