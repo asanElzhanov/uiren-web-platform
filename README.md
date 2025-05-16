@@ -1,4 +1,10 @@
+# About the project
 
+This application is a server-side (backend) language learning platform with gamification elements.
+
+The platform allows users to learn foreign languages through game mechanics - tasks, levels, achievements and ratings.
+
+The backend implements the main functions: authentication, user management, progress tracking, rewards, and more.
 
 # 📘 API Endpoints
 
@@ -333,7 +339,7 @@
 ```json
 {
   "type": "match_pairs",
-  "correct_answer": "niga",
+  "correct_answer": "nia",
   "pairs": [
     { "term": "san", "match": "bazan" }
   ]
