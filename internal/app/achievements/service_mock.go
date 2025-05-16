@@ -107,6 +107,20 @@ func (mr *MockachievementRepoMockRecorder) deleteAchievement(ctx, id interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteAchievement", reflect.TypeOf((*MockachievementRepo)(nil).deleteAchievement), ctx, id)
 }
 
+// deleteAchievementLevelsByID mocks base method.
+func (m *MockachievementRepo) deleteAchievementLevelsByID(ctx context.Context, achID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "deleteAchievementLevelsByID", ctx, achID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// deleteAchievementLevelsByID indicates an expected call of deleteAchievementLevelsByID.
+func (mr *MockachievementRepoMockRecorder) deleteAchievementLevelsByID(ctx, achID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteAchievementLevelsByID", reflect.TypeOf((*MockachievementRepo)(nil).deleteAchievementLevelsByID), ctx, achID)
+}
+
 // deleteLevel mocks base method.
 func (m *MockachievementRepo) deleteLevel(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error {
 	m.ctrl.T.Helper()

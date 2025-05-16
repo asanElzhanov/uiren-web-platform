@@ -126,6 +126,7 @@ func Test_achievementService_DeleteAchievement_success(t *testing.T) {
 	defer ctrl.Finish()
 
 	achievementRepo.EXPECT().deleteAchievement(ctx, req).Return(nil)
+	achievementRepo.EXPECT().deleteAchievementLevelsByID(ctx, req).Return(nil)
 
 	err := service.DeleteAchievement(ctx, req)
 
@@ -150,6 +151,27 @@ func Test_achievementService_DeleteAchievement_repoFailed(t *testing.T) {
 	err := service.DeleteAchievement(ctx, req)
 
 	assert.Error(t, err)
+}
+
+func Test_achievementService_DeleteAchievement_repoFailed2(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx             = context.TODO()
+		ctrl            = gomock.NewController(t)
+		achievementRepo = NewMockachievementRepo(ctrl)
+		service         = NewAchievementService(achievementRepo)
+
+		req     = 1
+		errRepo = errors.New("any")
+	)
+	defer ctrl.Finish()
+
+	achievementRepo.EXPECT().deleteAchievement(ctx, req).Return(nil)
+	achievementRepo.EXPECT().deleteAchievementLevelsByID(ctx, req).Return(errRepo)
+
+	err := service.DeleteAchievement(ctx, req)
+
+	assert.NoError(t, err)
 }
 
 func Test_achievementService_GetAchievement_Success(t *testing.T) {
