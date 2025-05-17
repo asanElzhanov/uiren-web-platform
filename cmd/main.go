@@ -31,8 +31,9 @@ import (
 
 var (
 	//app
-	appPortKey  = "app_port"
-	appLogLevel = "app_log_level"
+	appPortKey         = "app_port"
+	appLogLevel        = "app_log_level"
+	frontendAddressKey = "frontend_address"
 	//db postgres
 	dbPostgresHostKey = "db_postgres_host"
 	dbPostgresPortKey = "db_postgres_port"
@@ -59,7 +60,7 @@ var (
 func main() {
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173", AllowMethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH", // PATCH указан
+		AllowOrigins: config.GetValue(frontendAddressKey).String(), AllowMethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH", // PATCH указан
 		AllowHeaders: "Content-Type,Authorization", AllowCredentials: true,
 	}))
 
