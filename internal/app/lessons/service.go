@@ -148,7 +148,6 @@ func (s LessonsService) DeleteExerciseFromList(ctx context.Context, code, exerci
 	return nil
 }
 
-// todo: write tests
 func (s LessonsService) GetAllLessonsWithExercises(ctx context.Context) ([]LessonDTO, error) {
 	logger.Info("LessonsService.GetAllLessonsWithExercises new request")
 
@@ -170,7 +169,6 @@ func (s LessonsService) GetAllLessonsWithExercises(ctx context.Context) ([]Lesso
 	return result, nil
 }
 
-// todo write tests
 func (s LessonsService) LessonExists(ctx context.Context, code string) (bool, error) {
 	logger.Info("LessonsService.LessonExists new request")
 

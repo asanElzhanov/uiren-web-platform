@@ -144,7 +144,6 @@ func (s ExerciseService) UpdateExercise(ctx context.Context, code string, dto Up
 	return nil
 }
 
-// todo write tests
 func (s ExerciseService) GetAllExercises(ctx context.Context) ([]Exercise, error) {
 	logger.Info("ExerciseService.GetAllExercises new requests")
 
@@ -156,8 +155,6 @@ func (s ExerciseService) GetAllExercises(ctx context.Context) ([]Exercise, error
 
 	return exercises, nil
 }
-
-// todo write tests
 
 func (s ExerciseService) ExerciseExists(ctx context.Context, code string) (bool, error) {
 	logger.Info("ExerciseService.ExerciseExists new request")

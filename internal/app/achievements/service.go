@@ -170,7 +170,6 @@ func (s AchievementService) GetLevel(ctx context.Context, achID, level int) (Ach
 	return achievementLevel, nil
 }
 
-// todo write tests
 func (s AchievementService) GetAllAchievements(ctx context.Context) ([]AchievementDTO, error) {
 	logger.Info("AchievementService.GetAllAchievements new request")
 

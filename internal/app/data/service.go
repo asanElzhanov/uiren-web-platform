@@ -14,6 +14,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+//go:generate mockgen -source service.go -destination service_mock.go -package data
+
 const (
 	getModulesCacheKey = "all_modules_list"
 )
@@ -87,7 +89,6 @@ func (s *DataService) WithExerciseService(exerciseService exerciseService) {
 	s.exerciseService = exerciseService
 }
 
-// todo: write tests
 func (s *DataService) GetUserWithProgress(ctx context.Context, username string) (UserInfo, error) {
 	logger.Info("DataService.GetUser new request")
 
@@ -114,7 +115,6 @@ func (s *DataService) GetUserWithProgress(ctx context.Context, username string) 
 	}, nil
 }
 
-// todo: write tests
 func (s *DataService) GetUserWithoutProgress(ctx context.Context, username string) (UserInfo, error) {
 	logger.Info("DataService.GetUserWithoutProgress new request")
 
@@ -134,7 +134,6 @@ func (s *DataService) GetUserWithoutProgress(ctx context.Context, username strin
 	}, nil
 }
 
-// todo: write tests
 func (s *DataService) GetPublicModules(ctx context.Context) (ModulesList, error) {
 	logger.Info("DataService.GetModules new request")
 	var modulesList []modules.Module
@@ -178,7 +177,6 @@ func (s *DataService) GetPublicModules(ctx context.Context) (ModulesList, error)
 	}, nil
 }
 
-// todo: write tests
 func (s *DataService) GetXPLeaderboard(ctx context.Context) (XPLeaderboard, error) {
 	logger.Info("DataService.GetXPLeaderboard new request")
 	var leaderboard progress.XPLeaderboard
@@ -220,7 +218,6 @@ func (s *DataService) GetXPLeaderboard(ctx context.Context) (XPLeaderboard, erro
 	return XPLeaderboard{Board: leaderboard}, nil
 }
 
-// todo write tests
 func (s *DataService) GetPublicLesson(ctx context.Context, code string) (lessons.LessonDTO, error) {
 	logger.Info("DataService.GetPublicLesson new request")
 	var lesson lessons.LessonDTO
@@ -262,8 +259,6 @@ func (s *DataService) GetPublicLesson(ctx context.Context, code string) (lessons
 
 	return lesson, nil
 }
-
-//todo write tests
 
 func (s *DataService) GetPublicExercise(ctx context.Context, code string) (exercises.Exercise, error) {
 	logger.Info("DataService.GetPublicExercise new requst")

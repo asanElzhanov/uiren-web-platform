@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
+	"uiren/internal/app/progress"
 	"uiren/internal/infrastracture/hasher"
 	"uiren/pkg/logger"
 
@@ -345,4 +347,246 @@ func Test_UserService_CheckUserExists_Fail(t *testing.T) {
 	err := srv.CheckUserExists(ctx, username)
 	assert.Error(t, err)
 	assert.Equal(t, ErrUserNotFound, err)
+}
+
+func Test_UserService_GetUserProgress(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx     = context.TODO()
+		ctrl    = gomock.NewController(t)
+		prgSrv  = NewMockProgressService(ctrl)
+		service = &UserService{prgService: prgSrv}
+		id      = "some id"
+		badges  = []string{
+			"badge1",
+			"badge2",
+		}
+		xp           = 50
+		achievements = []progress.UserAchievement{
+			{
+				AchievementName: "ach1",
+				Progress:        50,
+			},
+			{
+				AchievementName: "ach2",
+				Progress:        30,
+			},
+		}
+
+		result = UserProgress{
+			Badges:       badges,
+			XP:           xp,
+			Achievements: achievements,
+		}
+
+		repoErr = errors.New("database error")
+	)
+
+	t.Run("success", func(t *testing.T) {
+		prgSrv.EXPECT().GetBadges(ctx, id).Return(badges, nil)
+		prgSrv.EXPECT().GetXP(ctx, id).Return(xp, nil)
+		prgSrv.EXPECT().GetAchievements(ctx, id).Return(achievements, nil)
+
+		prg, err := service.GetUserProgress(ctx, id)
+
+		assert.NoError(t, err)
+		assert.Equal(t, prg, result)
+	})
+
+	t.Run("GetBadges error", func(t *testing.T) {
+		prgSrv.EXPECT().GetBadges(ctx, id).Return(nil, repoErr)
+
+		prg, err := service.GetUserProgress(ctx, id)
+		assert.Error(t, err)
+		assert.Equal(t, prg, UserProgress{})
+		assert.Equal(t, err, repoErr)
+	})
+
+	t.Run("GetXP error", func(t *testing.T) {
+		prgSrv.EXPECT().GetBadges(ctx, id).Return(badges, nil)
+		prgSrv.EXPECT().GetXP(ctx, id).Return(-1, repoErr)
+
+		prg, err := service.GetUserProgress(ctx, id)
+		assert.Error(t, err)
+		assert.Equal(t, prg, UserProgress{})
+		assert.Equal(t, err, repoErr)
+	})
+
+	t.Run("GetAchievements error", func(t *testing.T) {
+		prgSrv.EXPECT().GetBadges(ctx, id).Return(badges, nil)
+		prgSrv.EXPECT().GetXP(ctx, id).Return(xp, nil)
+		prgSrv.EXPECT().GetAchievements(ctx, id).Return(nil, repoErr)
+
+		prg, err := service.GetUserProgress(ctx, id)
+		assert.Error(t, err)
+		assert.Equal(t, prg, UserProgress{})
+		assert.Equal(t, err, repoErr)
+	})
+}
+
+func Test_UserService_GetUserByUsername(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx          = context.TODO()
+		ctrl         = gomock.NewController(t)
+		repo         = NewMockrepository(ctrl)
+		service      = &UserService{repo: repo}
+		username     = "some"
+		userToReturn = UserDTO{
+			ID:        "uuid",
+			Username:  "some",
+			Email:     "meail@efe.kz",
+			Firstname: " first  ",
+			Lastname:  " last ",
+		}
+
+		normalizedDTO = UserDTO{
+			ID:        "uuid",
+			Username:  "some",
+			Email:     "meail@efe.kz",
+			Firstname: "first",
+			Lastname:  "last",
+		}
+		repoErr = errors.New("repo errror")
+	)
+
+	t.Run("success", func(t *testing.T) {
+		repo.EXPECT().getUserByUsername(ctx, username).Return(userToReturn, nil)
+		user, err := service.GetUserByUsername(ctx, username)
+		assert.NoError(t, err)
+		assert.Equal(t, user, normalizedDTO)
+	})
+
+	t.Run("repo failed", func(t *testing.T) {
+		repo.EXPECT().getUserByUsername(ctx, username).Return(UserDTO{}, repoErr)
+		user, err := service.GetUserByUsername(ctx, username)
+		assert.Equal(t, err, repoErr)
+		assert.Equal(t, user, UserDTO{})
+	})
+}
+
+func Test_UserService_GetUserByID(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx          = context.TODO()
+		ctrl         = gomock.NewController(t)
+		repo         = NewMockrepository(ctrl)
+		service      = &UserService{repo: repo}
+		id           = "uuid"
+		userToReturn = UserDTO{
+			ID:        "uuid",
+			Username:  "some",
+			Email:     "meail@efe.kz",
+			Firstname: " first  ",
+			Lastname:  " last ",
+		}
+
+		normalizedDTO = UserDTO{
+			ID:        "uuid",
+			Username:  "some",
+			Email:     "meail@efe.kz",
+			Firstname: "first",
+			Lastname:  "last",
+		}
+		repoErr = errors.New("repo errror")
+	)
+
+	t.Run("success", func(t *testing.T) {
+		repo.EXPECT().getUserByID(ctx, id).Return(userToReturn, nil)
+		user, err := service.GetUserByID(ctx, id)
+		assert.NoError(t, err)
+		assert.Equal(t, user, normalizedDTO)
+	})
+
+	t.Run("repo failed", func(t *testing.T) {
+		repo.EXPECT().getUserByID(ctx, id).Return(UserDTO{}, repoErr)
+		user, err := service.GetUserByID(ctx, id)
+		assert.Equal(t, err, repoErr)
+		assert.Equal(t, user, UserDTO{})
+	})
+}
+
+func Test_UserService_GetAllUsers(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx           = context.TODO()
+		ctrl          = gomock.NewController(t)
+		repo          = NewMockrepository(ctrl)
+		service       = &UserService{repo: repo}
+		usersToReturn = []UserDTO{
+			{
+				ID:        "1",
+				Username:  "jdoe",
+				Email:     "      jdoe@example.com   ",
+				Password:  "hashedpassword123",
+				Firstname: "John    ",
+				Lastname:  "     Doe",
+				Phone:     "+1234567890",
+				IsActive:  true,
+				IsAdmin:   false,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				DeletedAt: time.Time{},
+			},
+			{
+				ID:        "2",
+				Username:  "asmith",
+				Email:     " asmith@example.com",
+				Password:  "hashedpassword456",
+				Firstname: "   Alice",
+				Lastname:  "Smith   ",
+				Phone:     "+0987654321",
+				IsActive:  true,
+				IsAdmin:   true,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				DeletedAt: time.Time{},
+			},
+		}
+		normalizedUsers = []UserDTO{
+			{
+				ID:        "1",
+				Username:  "jdoe",
+				Email:     "jdoe@example.com",
+				Password:  "...",
+				Firstname: "John",
+				Lastname:  "Doe",
+				Phone:     "+1234567890",
+				IsActive:  true,
+				IsAdmin:   false,
+				CreatedAt: usersToReturn[0].CreatedAt,
+				UpdatedAt: usersToReturn[0].UpdatedAt,
+				DeletedAt: time.Time{},
+			},
+			{
+				ID:        "2",
+				Username:  "asmith",
+				Email:     "asmith@example.com",
+				Password:  "...",
+				Firstname: "Alice",
+				Lastname:  "Smith",
+				Phone:     "+0987654321",
+				IsActive:  true,
+				IsAdmin:   true,
+				CreatedAt: usersToReturn[1].CreatedAt,
+				UpdatedAt: usersToReturn[1].UpdatedAt,
+				DeletedAt: time.Time{},
+			},
+		}
+		repoErr = errors.New("repo err")
+	)
+
+	t.Run("success", func(t *testing.T) {
+		repo.EXPECT().getAllUsers(ctx).Return(usersToReturn, nil)
+		users, err := service.GetAllUsers(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, users, normalizedUsers)
+	})
+
+	t.Run("repo err", func(t *testing.T) {
+		repo.EXPECT().getAllUsers(ctx).Return(nil, repoErr)
+		users, err := service.GetAllUsers(ctx)
+		assert.Equal(t, err, repoErr)
+		assert.Nil(t, users)
+	})
 }

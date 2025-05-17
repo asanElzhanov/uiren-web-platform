@@ -678,3 +678,69 @@ func Test_achievementService_GetLevel_repoFailed(t *testing.T) {
 	assert.Equal(t, ErrAchievementLevelNotFound, err)
 	assert.Equal(t, response, result)
 }
+
+func Test_achievementService_GetAllAchievements(t *testing.T) {
+	var (
+		ctx          = context.TODO()
+		ctrl         = gomock.NewController(t)
+		repo         = NewMockachievementRepo(ctrl)
+		service      = &AchievementService{achievementRepo: repo}
+		achievements = []achievement{
+			{1, "Login Streak", time.Now(), time.Now(), nil},
+			{2, "Words Learned", time.Now(), time.Now(), nil},
+			{3, "Lessons Completed", time.Now(), time.Now(), nil},
+			{4, "Tests Passed", time.Now(), time.Now(), nil},
+		}
+
+		levels = map[int][]AchievementLevel{
+			1: {
+				{AchID: 1, AchName: "Login Streak", Level: 1, Description: "Login 3 days in a row", Threshold: 3, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 1, AchName: "Login Streak", Level: 2, Description: "Login 7 days in a row", Threshold: 7, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 1, AchName: "Login Streak", Level: 3, Description: "Login 30 days in a row", Threshold: 30, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+			},
+			2: {
+				{AchID: 2, AchName: "Words Learned", Level: 1, Description: "Learn 10 words", Threshold: 10, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 2, AchName: "Words Learned", Level: 2, Description: "Learn 50 words", Threshold: 50, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 2, AchName: "Words Learned", Level: 3, Description: "Learn 100 words", Threshold: 100, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+			},
+			3: {
+				{AchID: 3, AchName: "Lessons Completed", Level: 1, Description: "Complete 5 lessons", Threshold: 5, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 3, AchName: "Lessons Completed", Level: 2, Description: "Complete 20 lessons", Threshold: 20, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+			},
+			4: {
+				{AchID: 4, AchName: "Tests Passed", Level: 1, Description: "Pass 1 test", Threshold: 1, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 4, AchName: "Tests Passed", Level: 2, Description: "Pass 5 tests", Threshold: 5, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+				{AchID: 4, AchName: "Tests Passed", Level: 3, Description: "Pass 10 tests", Threshold: 10, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+			},
+		}
+		repoErr = errors.New("error")
+	)
+
+	t.Run("success", func(t *testing.T) {
+		expectedResult := []AchievementDTO{}
+		repo.EXPECT().getAllAchievements(ctx).Return(achievements, nil)
+		for _, achievement := range achievements {
+			repo.EXPECT().getLevelsByAchievementID(ctx, achievement.id).Return(levels[achievement.id], nil)
+			expectedResult = append(expectedResult, achievement.toDTO(levels[achievement.id]))
+		}
+		result, err := service.GetAllAchievements(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, result, expectedResult)
+	})
+
+	t.Run("repo failed#1", func(t *testing.T) {
+		repo.EXPECT().getAllAchievements(ctx).Return(nil, repoErr)
+		result, err := service.GetAllAchievements(ctx)
+		assert.Equal(t, err, repoErr)
+		assert.Nil(t, result)
+	})
+
+	t.Run("repo failed#2", func(t *testing.T) {
+		repo.EXPECT().getAllAchievements(ctx).Return(achievements, nil)
+		repo.EXPECT().getLevelsByAchievementID(ctx, achievements[0].id).Return(levels[achievements[0].id], nil)
+		repo.EXPECT().getLevelsByAchievementID(ctx, achievements[1].id).Return(nil, repoErr)
+		result, err := service.GetAllAchievements(ctx)
+		assert.Equal(t, err, repoErr)
+		assert.Nil(t, result)
+	})
+}

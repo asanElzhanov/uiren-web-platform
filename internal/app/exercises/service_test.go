@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 	"uiren/pkg/logger"
 
 	"github.com/golang/mock/gomock"
@@ -621,4 +622,105 @@ func Test_exerciseService_UpdateExercise_fail(t *testing.T) {
 		assert.Equal(t, err, ErrIncorrectType)
 	})
 
+}
+
+func Test_exerciseService_GetAllExercises(t *testing.T) {
+	var (
+		ctx           = context.TODO()
+		ctrl          = gomock.NewController(t)
+		repo          = NewMockrepository(ctrl)
+		srv           = NewExerciseService(repo)
+		MockExercises = []Exercise{
+			{
+				Code:          "ex1",
+				ExerciseType:  "multiple_choice",
+				Question:      "What is the capital of Kazakhstan?",
+				Hints:         []string{"It's a planned city", "Renamed in 2019"},
+				Explanation:   "The capital is Astana.",
+				Options:       []string{"Astana", "Almaty", "Shymkent"},
+				CorrectAnswer: "Astana",
+				CreatedAt:     time.Now(),
+			},
+			{
+				Code:          "ex2",
+				ExerciseType:  "manual_typing",
+				Question:      "Type the Kazakh word for 'hello'.",
+				Hints:         []string{"Starts with 'С'"},
+				Explanation:   "'Сәлем' is the Kazakh word for hello.",
+				CorrectAnswer: "Сәлем",
+				CreatedAt:     time.Now(),
+			},
+			{
+				Code:         "ex3",
+				ExerciseType: "order_words",
+				Question:     "Arrange the words: 'I love Kazakhstan'.",
+				Hints:        []string{"Start with 'Мен'"},
+				Explanation:  "The correct order is: Мен Қазақстанды жақсы көремін.",
+				Options:      []string{"Мен", "жақсы", "Қазақстанды", "көремін"},
+				CorrectOrder: []string{"Мен", "Қазақстанды", "жақсы", "көремін"},
+				CreatedAt:    time.Now(),
+			},
+			{
+				Code:         "ex4",
+				ExerciseType: "match_pairs",
+				Question:     "Match Kazakh food words with their English translations.",
+				Hints:        []string{"All are food-related"},
+				Explanation:  "Basic vocabulary for common food items.",
+				Pairs: []Pair{
+					{Term: "Сүт", Match: "Milk"},
+					{Term: "Нан", Match: "Bread"},
+					{Term: "Су", Match: "Water"},
+				},
+				CreatedAt: time.Now(),
+			},
+		}
+		errRepo = errors.New("repo er")
+	)
+
+	t.Run("success", func(t *testing.T) {
+		repo.EXPECT().getAllExercises(ctx).Return(MockExercises, nil)
+		result, err := srv.GetAllExercises(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, result, MockExercises)
+	})
+	t.Run("repo failed", func(t *testing.T) {
+		repo.EXPECT().getAllExercises(ctx).Return(nil, errRepo)
+		result, err := srv.GetAllExercises(ctx)
+		assert.Error(t, err)
+		assert.Equal(t, err, errRepo)
+		assert.Nil(t, result)
+	})
+}
+
+func Test_exerciseService_ExerciseExists(t *testing.T) {
+	var (
+		ctx     = context.TODO()
+		ctrl    = gomock.NewController(t)
+		repo    = NewMockrepository(ctrl)
+		srv     = NewExerciseService(repo)
+		code    = "code"
+		errRepo = errors.New("err repo")
+	)
+
+	t.Run("success-true", func(t *testing.T) {
+		repo.EXPECT().exerciseExists(ctx, code).Return(true, nil)
+		exists, err := srv.ExerciseExists(ctx, code)
+		assert.NoError(t, err)
+		assert.True(t, exists)
+	})
+
+	t.Run("success-false", func(t *testing.T) {
+		repo.EXPECT().exerciseExists(ctx, code).Return(false, nil)
+		exists, err := srv.ExerciseExists(ctx, code)
+		assert.NoError(t, err)
+		assert.False(t, exists)
+	})
+
+	t.Run("repo failed", func(t *testing.T) {
+		repo.EXPECT().exerciseExists(ctx, code).Return(true, errRepo)
+		exists, err := srv.ExerciseExists(ctx, code)
+		assert.Error(t, err)
+		assert.Equal(t, err, errRepo)
+		assert.False(t, exists)
+	})
 }
