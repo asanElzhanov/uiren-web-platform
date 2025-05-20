@@ -64,6 +64,7 @@ func Test_dataService_GetUser(t *testing.T) {
 			Email:     repoReturn.Email,
 			Phone:     repoReturn.Phone,
 			Progress:  &progress,
+			CreatedAt: repoReturn.CreatedAt,
 		}, result)
 	})
 	t.Run("(with progress) repo failed#1", func(t *testing.T) {
@@ -90,6 +91,7 @@ func Test_dataService_GetUser(t *testing.T) {
 			Lastname:  repoReturn.Lastname,
 			Email:     repoReturn.Email,
 			Phone:     repoReturn.Phone,
+			CreatedAt: repoReturn.CreatedAt,
 		}, result)
 	})
 	t.Run("(no progress) repo failed", func(t *testing.T) {

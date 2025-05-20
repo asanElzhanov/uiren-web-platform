@@ -112,6 +112,7 @@ func (s *DataService) GetUserWithProgress(ctx context.Context, username string) 
 		Email:     userDTO.Email,
 		Phone:     userDTO.Phone,
 		Progress:  &userProgress,
+		CreatedAt: userDTO.CreatedAt,
 	}, nil
 }
 
@@ -131,6 +132,7 @@ func (s *DataService) GetUserWithoutProgress(ctx context.Context, username strin
 		Lastname:  userDTO.Lastname,
 		Email:     userDTO.Email,
 		Phone:     userDTO.Phone,
+		CreatedAt: userDTO.CreatedAt,
 	}, nil
 }
 
