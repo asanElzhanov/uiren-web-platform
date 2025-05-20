@@ -226,4 +226,7 @@ func (app *App) SetHandlers() {
 	//progress(admin)
 	progressAdminApi := api.Group("/progress-admin", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	progressAdminApi.Get("/badges", app.getAllBadges)
+	//profile
+	profileAPI := api.Group("/profile", middleware.JWTMiddleware())
+	profileAPI.Patch("/", app.updateProfile)
 }
