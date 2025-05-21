@@ -15,6 +15,7 @@ type friendshipRepository interface {
 	getFriendList(ctx context.Context, username string) (FriendList, error)
 	getRequestList(ctx context.Context, username string) (FriendList, error)
 	getFriendshipRecipient(ctx context.Context, username1, username2 string) (string, error)
+	deleteFriendship(ctx context.Context, req FriendshipRequestDTO) error
 }
 
 type userService interface {
@@ -132,4 +133,20 @@ func (s *FriendshipService) GetRequestList(ctx context.Context, username string)
 		return FriendList{}, err
 	}
 	return friendList, nil
+}
+
+// todo write tests
+func (s *FriendshipService) DeleteFriendship(ctx context.Context, req FriendshipRequestDTO) error {
+	logger.Info("FrinedshipService.DeleteFriendship new request")
+
+	if req.RequesterUsername == req.RecipientUsername {
+		return ErrSameUser
+	}
+
+	if err := s.friendshipRepository.deleteFriendship(ctx, req); err != nil {
+		logger.Error("FriendshipService.DeleteFrinedship friendshipRepository.deleteFriendship: ", err)
+		return err
+	}
+
+	return nil
 }

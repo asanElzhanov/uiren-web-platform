@@ -64,6 +64,20 @@ func (mr *MockfriendshipRepositoryMockRecorder) createFriendshipStatus(ctx, req 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "createFriendshipStatus", reflect.TypeOf((*MockfriendshipRepository)(nil).createFriendshipStatus), ctx, req)
 }
 
+// deleteFriendship mocks base method.
+func (m *MockfriendshipRepository) deleteFriendship(ctx context.Context, req FriendshipRequestDTO) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "deleteFriendship", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// deleteFriendship indicates an expected call of deleteFriendship.
+func (mr *MockfriendshipRepositoryMockRecorder) deleteFriendship(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteFriendship", reflect.TypeOf((*MockfriendshipRepository)(nil).deleteFriendship), ctx, req)
+}
+
 // getFriendList mocks base method.
 func (m *MockfriendshipRepository) getFriendList(ctx context.Context, username string) (FriendList, error) {
 	m.ctrl.T.Helper()

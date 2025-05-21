@@ -2,6 +2,7 @@ package friendship
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/jackc/pgx/v5"
@@ -80,11 +81,13 @@ func (r *repository) changeFriendshipStatus(ctx context.Context, req FriendshipR
 func (r *repository) getFriendList(ctx context.Context, username string) (FriendList, error) {
 	var (
 		query = `
-		SELECT u.username FROM friendships f
+		SELECT u.username, u.first_name, u.last_name FROM friendships f
 		JOIN users u ON f.user1_username = u.username OR f.user2_username = u.username
 		WHERE (f.user1_username = $1 OR f.user2_username = $1) AND f.status = 'accepted' AND u.username != $1;
 		`
-		response FriendList
+		response  FriendList
+		firstname sql.NullString
+		lastname  sql.NullString
 	)
 
 	rows, err := r.db.Query(ctx, query, username)
@@ -94,11 +97,13 @@ func (r *repository) getFriendList(ctx context.Context, username string) (Friend
 	defer rows.Close()
 
 	for rows.Next() {
-		var username string
-		if err := rows.Scan(&username); err != nil {
+		var entity FriendListEntity
+		if err := rows.Scan(&entity.Username, &firstname, &lastname); err != nil {
 			return FriendList{}, err
 		}
-		response.Usernames = append(response.Usernames, username)
+		entity.Firstname = firstname.String
+		entity.Lastname = lastname.String
+		response.Friends = append(response.Friends, entity)
 		response.Total++
 	}
 	if err := rows.Err(); err != nil {
@@ -111,7 +116,7 @@ func (r *repository) getFriendList(ctx context.Context, username string) (Friend
 func (r *repository) getRequestList(ctx context.Context, username string) (FriendList, error) {
 	var (
 		query = `
-		SELECT u.username FROM friendships f
+		SELECT u.username, u.first_name, u.last_name FROM friendships f
 		JOIN users u ON f.user1_username = u.username OR f.user2_username = u.username
 		WHERE 
 		(f.user1_username = $1 OR f.user2_username = $1) 
@@ -119,7 +124,9 @@ func (r *repository) getRequestList(ctx context.Context, username string) (Frien
 		AND u.username != $1
 		AND recipient = $1;
 		`
-		response FriendList
+		response  FriendList
+		firstname sql.NullString
+		lastname  sql.NullString
 	)
 
 	rows, err := r.db.Query(ctx, query, username)
@@ -129,11 +136,13 @@ func (r *repository) getRequestList(ctx context.Context, username string) (Frien
 	defer rows.Close()
 
 	for rows.Next() {
-		var username string
-		if err := rows.Scan(&username); err != nil {
+		var entity FriendListEntity
+		if err := rows.Scan(&entity.Username, &firstname, &lastname); err != nil {
 			return FriendList{}, err
 		}
-		response.Usernames = append(response.Usernames, username)
+		entity.Firstname = firstname.String
+		entity.Lastname = lastname.String
+		response.Friends = append(response.Friends, entity)
 		response.Total++
 	}
 	if err := rows.Err(); err != nil {
@@ -162,4 +171,24 @@ func (r *repository) getFriendshipRecipient(ctx context.Context, username1, user
 	}
 
 	return recipient, nil
+}
+
+func (r *repository) deleteFriendship(ctx context.Context, req FriendshipRequestDTO) error {
+	var (
+		query = `
+		DELETE FROM friendships WHERE 
+		(user1_username = $1 AND user2_username = $2) 
+		OR (user1_username = $2 AND user2_username = $1);
+		`
+	)
+
+	commandTag, err := r.db.Exec(ctx, query, req.RecipientUsername, req.RequesterUsername)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() == 0 {
+		return ErrFriendshipNotFound
+	}
+
+	return nil
 }

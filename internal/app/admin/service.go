@@ -84,6 +84,7 @@ type friendshipService interface {
 	HandleFriendRequest(ctx context.Context, friendshipRequest friendship.FriendshipRequestDTO) (friendship.Friendship, error)
 	GetFriendList(ctx context.Context, username string) (friendship.FriendList, error)
 	GetRequestList(ctx context.Context, username string) (friendship.FriendList, error)
+	DeleteFriendship(ctx context.Context, req friendship.FriendshipRequestDTO) error
 }
 
 type dataService interface {
@@ -212,6 +213,7 @@ func (app *App) SetHandlers() {
 	friendsApi.Post("/handle-request", app.handleFriendRequest)
 	friendsApi.Get("/friend-list", app.getFriendList)
 	friendsApi.Get("/request-list", app.getRequestList)
+	friendsApi.Delete("/", app.deleteFriendshipInfo)
 	//data
 	dataApi := api.Group("/data", middleware.JWTMiddleware())
 	dataApi.Get("/modules", app.mainPageModules)
