@@ -107,7 +107,7 @@ func (r *modulesRepository) updateModule(ctx context.Context, code string, dto U
 		update["goal"] = *dto.Goal
 	}
 	if dto.Difficulty != nil {
-		update["goal"] = *dto.Difficulty
+		update["difficulty"] = *dto.Difficulty
 	}
 	if dto.UnlockReq != nil {
 		update["unlock_requirements"] = *dto.UnlockReq
