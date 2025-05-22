@@ -11,8 +11,8 @@ import (
 type UserInfo struct {
 	ID        string              `json:"id"`
 	Username  string              `json:"username"`
-	Firstname string              `json:"firstname"`
-	Lastname  string              `json:"lastname"`
+	Firstname string              `json:"first_name"`
+	Lastname  string              `json:"last_name"`
 	Email     string              `json:"email"`
 	Phone     string              `json:"phone"`
 	Progress  *users.UserProgress `json:"progress"`
