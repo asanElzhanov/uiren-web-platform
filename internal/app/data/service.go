@@ -4,20 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+	"uiren/internal/app/achievements"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/progress"
 	"uiren/internal/app/users"
 	"uiren/pkg/logger"
-
-	"github.com/redis/go-redis/v9"
 )
 
 //go:generate mockgen -source service.go -destination service_mock.go -package data
 
 const (
-	getModulesCacheKey = "all_modules_list"
+	getModulesCacheKey      = "all_modules_list"
+	getAchievementsCacheKey = "all_achievements_list"
 )
 
 type userService interface {
@@ -47,15 +47,20 @@ type progressService interface {
 	GetXPLeaderboard(ctx context.Context, limit int) (progress.XPLeaderboard, error)
 }
 
+type achievementsService interface {
+	GetAllAchievements(ctx context.Context) ([]achievements.AchievementDTO, error)
+}
+
 type DataService struct {
-	redisClient        redisClient
-	userService        userService
-	modulesService     modulesService
-	lessonsService     lessonsService
-	exerciseService    exerciseService
-	progressService    progressService
-	dataTTL            time.Duration
-	xpLeaderboardLimit int
+	redisClient         redisClient
+	userService         userService
+	modulesService      modulesService
+	lessonsService      lessonsService
+	exerciseService     exerciseService
+	achievementsService achievementsService
+	progressService     progressService
+	dataTTL             time.Duration
+	xpLeaderboardLimit  int
 }
 
 func NewDataService(
@@ -87,6 +92,10 @@ func (s *DataService) WithLessonService(lessonsService lessonsService) {
 
 func (s *DataService) WithExerciseService(exerciseService exerciseService) {
 	s.exerciseService = exerciseService
+}
+
+func (s *DataService) WithAchievementService(achievementsService achievementsService) {
+	s.achievementsService = achievementsService
 }
 
 func (s *DataService) GetUserWithProgress(ctx context.Context, username string) (UserInfo, error) {
@@ -142,11 +151,6 @@ func (s *DataService) GetPublicModules(ctx context.Context) (ModulesList, error)
 	data, err := s.redisClient.Get(ctx, getModulesCacheKey)
 
 	if err != nil {
-		if err != redis.Nil {
-			logger.Error("DataService.GetModules redisClient.Get: ", err)
-			return ModulesList{}, err
-		}
-
 		modulesList, err = s.modulesService.GetModulesList(ctx)
 		if err != nil {
 			logger.Error("DataService.GetModules modulesService.GetModules: ", err)
@@ -186,11 +190,6 @@ func (s *DataService) GetXPLeaderboard(ctx context.Context) (XPLeaderboard, erro
 	key := generateXpLeaderboardKey(s.xpLeaderboardLimit)
 	data, err := s.redisClient.Get(ctx, key)
 	if err != nil {
-		if err != redis.Nil {
-			logger.Error("DataService.GetXPLeaderboard redisClient.Get: ", err)
-			return XPLeaderboard{}, err
-		}
-
 		leaderboard, err = s.progressService.GetXPLeaderboard(ctx, s.xpLeaderboardLimit)
 		if err != nil {
 			logger.Error("DataService.GetXPLeaderboard progressService.GetXPLeaderboard: ", err)
@@ -228,11 +227,6 @@ func (s *DataService) GetPublicLesson(ctx context.Context, code string) (lessons
 	data, err := s.redisClient.Get(ctx, key)
 
 	if err != nil {
-		if err != redis.Nil {
-			logger.Error("DataService.GetPublicLesson redisClient.Get: ", err)
-			return lessons.LessonDTO{}, err
-		}
-
 		lesson, err = s.lessonsService.GetLesson(ctx, code)
 		if err != nil {
 			logger.Error("DataService.GetPublicLesson lessonsService.GetLesson: ", err)
@@ -263,18 +257,13 @@ func (s *DataService) GetPublicLesson(ctx context.Context, code string) (lessons
 }
 
 func (s *DataService) GetPublicExercise(ctx context.Context, code string) (exercises.Exercise, error) {
-	logger.Info("DataService.GetPublicExercise new requst")
+	logger.Info("DataService.GetPublicExercise new request")
 	var exercise exercises.Exercise
 
 	key := generateExerciseKey(code)
 	data, err := s.redisClient.Get(ctx, key)
 
 	if err != nil {
-		if err != redis.Nil {
-			logger.Error("DataService.GetPublicExercise redisClient.Get: ", err)
-			return exercises.Exercise{}, err
-		}
-
 		exercise, err = s.exerciseService.GetExercise(ctx, code)
 		if err != nil {
 			logger.Error("DataService.GetPublicExercise lessonsService.GetLesson: ", err)
@@ -302,4 +291,41 @@ func (s *DataService) GetPublicExercise(ctx context.Context, code string) (exerc
 	}
 
 	return exercise, nil
+}
+
+func (s *DataService) GetPublicAchievements(ctx context.Context) ([]achievements.AchievementDTO, error) {
+	logger.Info("DataService.GetPublicAchievements new request")
+	var achievements []achievements.AchievementDTO
+
+	key := getAchievementsCacheKey
+	data, err := s.redisClient.Get(ctx, key)
+
+	if err != nil {
+		achievements, err = s.achievementsService.GetAllAchievements(ctx)
+		if err != nil {
+			logger.Error("DataService.GetPublicAchievements achievementsService.GetAllAchievements: ", err)
+			return nil, err
+		}
+
+		newData, err := json.Marshal(achievements)
+		if err != nil {
+			logger.Error("DataService.GetPublicAchievements json.Marshal: ", err)
+			return nil, err
+		}
+
+		err = s.redisClient.Set(ctx, key, newData, &s.dataTTL)
+		if err != nil {
+			logger.Error("DataService.GetPublicAchievements redisClient.Set: ", err)
+		}
+
+		return achievements, nil
+	}
+
+	err = json.Unmarshal([]byte(data), &achievements)
+	if err != nil {
+		logger.Error("DataService.GetPublicAchievements json.Unmarshal: ", err)
+		return nil, err
+	}
+
+	return achievements, nil
 }

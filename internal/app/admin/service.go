@@ -96,6 +96,8 @@ type dataService interface {
 	GetPublicExercise(ctx context.Context, code string) (exercises.Exercise, error)
 
 	GetXPLeaderboard(ctx context.Context) (data.XPLeaderboard, error)
+
+	GetPublicAchievements(ctx context.Context) ([]achievements.AchievementDTO, error)
 }
 
 type progressService interface {
@@ -221,6 +223,7 @@ func (app *App) SetHandlers() {
 	dataApi.Get("/exercise", app.getExerciseToPass)
 	dataApi.Get("/users", app.getUserInfo)
 	dataApi.Get("/xp-leaderboard", app.getXPLeaderboard)
+	dataApi.Get("/achievements", app.getPublicAchievements)
 	//progress
 	progressApi := api.Group("/progress", middleware.JWTMiddleware())
 	progressApi.Patch("/", app.updateProgress)

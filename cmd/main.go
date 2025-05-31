@@ -167,6 +167,7 @@ func main() {
 	dataService.WithProgressService(progressService, config.GetValue(xpLeaderboardLimitKey).Int())
 	dataService.WithLessonService(lessonService)
 	dataService.WithExerciseService(exerciseService)
+	dataService.WithAchievementService(achievementService)
 
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)

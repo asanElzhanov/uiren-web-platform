@@ -118,3 +118,17 @@ func (app *App) getXPLeaderboard(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(leaderboard.Board)
 }
+
+func (app *App) getPublicAchievements(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+	)
+
+	achievements, err := app.dataService.GetPublicAchievements(ctx)
+	if err != nil {
+		logger.Error("app.getPublicAchievements dataService.GetPublicAchievements: ", err)
+		return fiberInternalServerError(c)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(achievements)
+}
