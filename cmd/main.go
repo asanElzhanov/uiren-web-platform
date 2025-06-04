@@ -10,6 +10,7 @@ import (
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/admin"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/avatars"
 	"uiren/internal/app/data"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/friendship"
@@ -169,6 +170,9 @@ func main() {
 	dataService.WithExerciseService(exerciseService)
 	dataService.WithAchievementService(achievementService)
 
+	avatarRepo := avatars.NewAvatarRepository("/avatars")
+	avatarService := avatars.NewAvatarService(avatarRepo)
+
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)
 	appService.WithAuthService(authService)
@@ -179,6 +183,7 @@ func main() {
 	appService.WithFriendshipService(friendshipService)
 	appService.WithDataService(dataService)
 	appService.WithProgressService(progressService)
+	appService.WithAvatarService(avatarService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

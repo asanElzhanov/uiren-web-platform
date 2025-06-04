@@ -102,6 +102,8 @@ func (app *App) getUserInfo(c *fiber.Ctx) error {
 		return getUserError(c, err)
 	}
 
+	userInfo.AvatarURL = c.BaseURL() + "/api/storage/avatars/avatar-" + userInfo.ID + ".png"
+
 	return c.Status(fiber.StatusOK).JSON(userInfo)
 }
 

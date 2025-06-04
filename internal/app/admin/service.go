@@ -4,6 +4,7 @@ import (
 	"context"
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/avatars"
 	"uiren/internal/app/data"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/friendship"
@@ -16,14 +17,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-func fiberInternalServerError(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
-}
-
-func fiberOK(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "OK"})
-}
 
 type modulesService interface {
 	GetModule(ctx context.Context, code string) (modules.ModuleWithLessons, error)
@@ -106,6 +99,10 @@ type progressService interface {
 	GetAllBadges(ctx context.Context) ([]progress.Badge, error)
 }
 
+type avatarService interface {
+	UploadAvatar(ctx context.Context, req avatars.UploadAvatarRequest) error
+}
+
 type App struct {
 	appFiber           *fiber.App
 	userService        userService
@@ -117,6 +114,7 @@ type App struct {
 	friendshipService  friendshipService
 	dataService        dataService
 	progressService    progressService
+	avatarService      avatarService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -161,8 +159,13 @@ func (app *App) WithProgressService(progressService progressService) {
 	app.progressService = progressService
 }
 
+func (app *App) WithAvatarService(avatarService avatarService) {
+	app.avatarService = avatarService
+}
+
 func (app *App) SetHandlers() {
 	api := app.appFiber.Group("/api")
+	api.Static("/storage", "./storage")
 
 	//auth
 	api.Post("/sign-in", app.signIn)
@@ -234,4 +237,7 @@ func (app *App) SetHandlers() {
 	//profile
 	profileAPI := api.Group("/profile", middleware.JWTMiddleware())
 	profileAPI.Patch("/", app.updateProfile)
+	//avatar
+	avatarAPI := api.Group("/avatar", middleware.JWTMiddleware())
+	avatarAPI.Post("/", app.uploadAvatar)
 }

@@ -17,6 +17,7 @@ type UserInfo struct {
 	Phone     string              `json:"phone"`
 	Progress  *users.UserProgress `json:"progress"`
 	CreatedAt time.Time           `json:"created_at"`
+	AvatarURL string              `json:"avatar_url"`
 }
 
 type ModulesList struct {
