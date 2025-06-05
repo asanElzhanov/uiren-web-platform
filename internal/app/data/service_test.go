@@ -6,6 +6,7 @@ import (
 	"errors"
 	"testing"
 	"time"
+	"uiren/internal/app/achievements"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
@@ -208,13 +209,6 @@ func Test_dataService_GetPublicModules(t *testing.T) {
 		})
 	})
 
-	t.Run("redis cli error not redis.Nil", func(t *testing.T) {
-		redisCli.EXPECT().Get(ctx, getModulesCacheKey).Return("", errRepo)
-		result, err := service.GetPublicModules(ctx)
-		assert.Equal(t, err, errRepo)
-		assert.Equal(t, result, ModulesList{})
-	})
-
 	t.Run("modulesService error", func(t *testing.T) {
 		redisCli.EXPECT().Get(ctx, getModulesCacheKey).Return("", redis.Nil)
 		modulesService.EXPECT().GetModulesList(ctx).Return(nil, errRepo)
@@ -311,13 +305,6 @@ func Test_dataService_GetPublicLesson(t *testing.T) {
 		assert.Equal(t, result, returnRepo)
 	})
 
-	t.Run("redis cli error not redis.Nil", func(t *testing.T) {
-		redisCli.EXPECT().Get(ctx, generateLessonKey(returnRepo.Code)).Return("", errRepo)
-		result, err := service.GetPublicLesson(ctx, returnRepo.Code)
-		assert.Equal(t, err, errRepo)
-		assert.Equal(t, result, lessons.LessonDTO{})
-	})
-
 	t.Run("lessonService error", func(t *testing.T) {
 		redisCli.EXPECT().Get(ctx, generateLessonKey(returnRepo.Code)).Return("", redis.Nil)
 		lessonService.EXPECT().GetLesson(ctx, returnRepo.Code).Return(lessons.LessonDTO{}, errRepo)
@@ -379,13 +366,6 @@ func Test_dataService_GetPublicExercise(t *testing.T) {
 		result, err := service.GetPublicExercise(ctx, returnRepo.Code)
 		assert.NoError(t, err)
 		assert.Equal(t, result, returnRepo)
-	})
-
-	t.Run("redis cli error not redis.Nil", func(t *testing.T) {
-		redisCli.EXPECT().Get(ctx, generateExerciseKey(returnRepo.Code)).Return("", errRepo)
-		result, err := service.GetPublicExercise(ctx, returnRepo.Code)
-		assert.Equal(t, err, errRepo)
-		assert.Equal(t, result, exercises.Exercise{})
 	})
 
 	t.Run("exerciseService error", func(t *testing.T) {
@@ -464,13 +444,6 @@ func Test_dataService_GetXPLeaderboard(t *testing.T) {
 		assert.Equal(t, result, XPLeaderboard{Board: returnRepo})
 	})
 
-	t.Run("redis cli error not redis.Nil", func(t *testing.T) {
-		redisCli.EXPECT().Get(ctx, generateXpLeaderboardKey(200)).Return("", errRepo)
-		result, err := service.GetXPLeaderboard(ctx)
-		assert.Equal(t, err, errRepo)
-		assert.Equal(t, result, XPLeaderboard{})
-	})
-
 	t.Run("progressService error", func(t *testing.T) {
 		redisCli.EXPECT().Get(ctx, generateXpLeaderboardKey(200)).Return("", redis.Nil)
 		progressService.EXPECT().GetXPLeaderboard(ctx, 200).Return(progress.XPLeaderboard{}, errRepo)
@@ -478,5 +451,103 @@ func Test_dataService_GetXPLeaderboard(t *testing.T) {
 		result, err := service.GetXPLeaderboard(ctx)
 		assert.Equal(t, err, errRepo)
 		assert.Equal(t, result, XPLeaderboard{})
+	})
+}
+
+func Test_dataService_GetAchievements(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx                   = context.TODO()
+		ctrl                  = gomock.NewController(t)
+		achService            = NewMockachievementsService(ctrl)
+		redisCli              = NewMockredisClient(ctrl)
+		service               = &DataService{achievementsService: achService, xpLeaderboardLimit: 200, redisClient: redisCli, dataTTL: time.Microsecond}
+		errRepo               = errors.New("ere")
+		mockAchievementLevels = []achievements.AchievementLevel{
+			{
+				AchID:       1,
+				AchName:     "First Login",
+				Level:       1,
+				Description: "Log in for the first time",
+				Threshold:   1,
+				CreatedAt:   time.Unix(444, 11),
+				UpdatedAt:   time.Unix(444, 11),
+			},
+			{
+				AchID:       1,
+				AchName:     "First Login",
+				Level:       2,
+				Description: "Log in 5 times",
+				Threshold:   5,
+				CreatedAt:   time.Unix(444, 11),
+				UpdatedAt:   time.Unix(444, 11),
+			},
+			{
+				AchID:       2,
+				AchName:     "First Lesson",
+				Level:       1,
+				Description: "Complete your first lesson",
+				Threshold:   1,
+				CreatedAt:   time.Unix(444, 11),
+				UpdatedAt:   time.Unix(444, 11),
+			},
+		}
+
+		MockAchievements = []achievements.AchievementDTO{
+			{
+				ID:        1,
+				Name:      "First Login",
+				Levels:    mockAchievementLevels[:2],
+				CreatedAt: time.Unix(444, 11),
+				UpdatedAt: time.Unix(444, 11),
+				DeletedAt: nil,
+			},
+			{
+				ID:        2,
+				Name:      "First Lesson",
+				Levels:    mockAchievementLevels[2:3],
+				CreatedAt: time.Unix(444, 11),
+				UpdatedAt: time.Unix(444, 11),
+				DeletedAt: nil,
+			},
+		}
+	)
+
+	t.Run("success(redis)", func(t *testing.T) {
+		data, _ := json.Marshal(MockAchievements)
+		redisCli.EXPECT().Get(ctx, getAchievementsCacheKey).Return(string(data), nil)
+
+		result, err := service.GetPublicAchievements(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, result, MockAchievements)
+	})
+	t.Run("success(db) redis-set no error", func(t *testing.T) {
+		redisCli.EXPECT().Get(ctx, getAchievementsCacheKey).Return("", redis.Nil)
+		achService.EXPECT().GetAllAchievements(ctx).Return(MockAchievements, nil)
+		data, _ := json.Marshal(MockAchievements)
+		redisCli.EXPECT().Set(ctx, getAchievementsCacheKey, data, &service.dataTTL).Return(nil)
+
+		result, err := service.GetPublicAchievements(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, result, MockAchievements)
+	})
+
+	t.Run("success(db) redis-set error", func(t *testing.T) {
+		redisCli.EXPECT().Get(ctx, getAchievementsCacheKey).Return("", redis.Nil)
+		achService.EXPECT().GetAllAchievements(ctx).Return(MockAchievements, nil)
+		data, _ := json.Marshal(MockAchievements)
+		redisCli.EXPECT().Set(ctx, getAchievementsCacheKey, data, &service.dataTTL).Return(redis.Nil)
+
+		result, err := service.GetPublicAchievements(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, result, MockAchievements)
+	})
+
+	t.Run("progressService error", func(t *testing.T) {
+		redisCli.EXPECT().Get(ctx, getAchievementsCacheKey).Return("", redis.Nil)
+		achService.EXPECT().GetAllAchievements(ctx).Return(nil, errRepo)
+		result, err := service.GetPublicAchievements(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, result)
 	})
 }

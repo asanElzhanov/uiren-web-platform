@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 	time "time"
+	achievements "uiren/internal/app/achievements"
 	exercises "uiren/internal/app/exercises"
 	lessons "uiren/internal/app/lessons"
 	modules "uiren/internal/app/modules"
@@ -286,4 +287,42 @@ func (m *MockprogressService) GetXPLeaderboard(ctx context.Context, limit int) (
 func (mr *MockprogressServiceMockRecorder) GetXPLeaderboard(ctx, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetXPLeaderboard", reflect.TypeOf((*MockprogressService)(nil).GetXPLeaderboard), ctx, limit)
+}
+
+// MockachievementsService is a mock of achievementsService interface.
+type MockachievementsService struct {
+	ctrl     *gomock.Controller
+	recorder *MockachievementsServiceMockRecorder
+}
+
+// MockachievementsServiceMockRecorder is the mock recorder for MockachievementsService.
+type MockachievementsServiceMockRecorder struct {
+	mock *MockachievementsService
+}
+
+// NewMockachievementsService creates a new mock instance.
+func NewMockachievementsService(ctrl *gomock.Controller) *MockachievementsService {
+	mock := &MockachievementsService{ctrl: ctrl}
+	mock.recorder = &MockachievementsServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockachievementsService) EXPECT() *MockachievementsServiceMockRecorder {
+	return m.recorder
+}
+
+// GetAllAchievements mocks base method.
+func (m *MockachievementsService) GetAllAchievements(ctx context.Context) ([]achievements.AchievementDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllAchievements", ctx)
+	ret0, _ := ret[0].([]achievements.AchievementDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllAchievements indicates an expected call of GetAllAchievements.
+func (mr *MockachievementsServiceMockRecorder) GetAllAchievements(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAchievements", reflect.TypeOf((*MockachievementsService)(nil).GetAllAchievements), ctx)
 }

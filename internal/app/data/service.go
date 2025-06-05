@@ -151,6 +151,7 @@ func (s *DataService) GetPublicModules(ctx context.Context) (ModulesList, error)
 	data, err := s.redisClient.Get(ctx, getModulesCacheKey)
 
 	if err != nil {
+		logger.Error("DataService.GetModules redis.Get: ", err)
 		modulesList, err = s.modulesService.GetModulesList(ctx)
 		if err != nil {
 			logger.Error("DataService.GetModules modulesService.GetModules: ", err)
@@ -190,6 +191,8 @@ func (s *DataService) GetXPLeaderboard(ctx context.Context) (XPLeaderboard, erro
 	key := generateXpLeaderboardKey(s.xpLeaderboardLimit)
 	data, err := s.redisClient.Get(ctx, key)
 	if err != nil {
+		logger.Error("DataService.GetXPLeaderboard redis.Get: ", err)
+
 		leaderboard, err = s.progressService.GetXPLeaderboard(ctx, s.xpLeaderboardLimit)
 		if err != nil {
 			logger.Error("DataService.GetXPLeaderboard progressService.GetXPLeaderboard: ", err)
@@ -227,6 +230,8 @@ func (s *DataService) GetPublicLesson(ctx context.Context, code string) (lessons
 	data, err := s.redisClient.Get(ctx, key)
 
 	if err != nil {
+		logger.Error("DataService.GetPublicLesson redis.Get: ", err)
+
 		lesson, err = s.lessonsService.GetLesson(ctx, code)
 		if err != nil {
 			logger.Error("DataService.GetPublicLesson lessonsService.GetLesson: ", err)
@@ -264,6 +269,8 @@ func (s *DataService) GetPublicExercise(ctx context.Context, code string) (exerc
 	data, err := s.redisClient.Get(ctx, key)
 
 	if err != nil {
+		logger.Error("DataService.GetPublicExercise redis.Get: ", err)
+
 		exercise, err = s.exerciseService.GetExercise(ctx, code)
 		if err != nil {
 			logger.Error("DataService.GetPublicExercise lessonsService.GetLesson: ", err)
@@ -301,6 +308,8 @@ func (s *DataService) GetPublicAchievements(ctx context.Context) ([]achievements
 	data, err := s.redisClient.Get(ctx, key)
 
 	if err != nil {
+		logger.Error("DataService.GetPublicAchievements redis.Get: ", err)
+
 		achievements, err = s.achievementsService.GetAllAchievements(ctx)
 		if err != nil {
 			logger.Error("DataService.GetPublicAchievements achievementsService.GetAllAchievements: ", err)
