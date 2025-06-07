@@ -10,6 +10,7 @@ import (
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/admin"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/avatars"
 	"uiren/internal/app/data"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/friendship"
@@ -31,8 +32,9 @@ import (
 
 var (
 	//app
-	appPortKey  = "app_port"
-	appLogLevel = "app_log_level"
+	appPortKey         = "app_port"
+	appLogLevel        = "app_log_level"
+	frontendAddressKey = "frontend_address"
 	//db postgres
 	dbPostgresHostKey = "db_postgres_host"
 	dbPostgresPortKey = "db_postgres_port"
@@ -59,7 +61,7 @@ var (
 func main() {
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173", AllowMethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH", // PATCH указан
+		AllowOrigins: config.GetValue(frontendAddressKey).String(), AllowMethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH", // PATCH указан
 		AllowHeaders: "Content-Type,Authorization", AllowCredentials: true,
 	}))
 
@@ -166,6 +168,10 @@ func main() {
 	dataService.WithProgressService(progressService, config.GetValue(xpLeaderboardLimitKey).Int())
 	dataService.WithLessonService(lessonService)
 	dataService.WithExerciseService(exerciseService)
+	dataService.WithAchievementService(achievementService)
+
+	avatarRepo := avatars.NewAvatarRepository("/avatars")
+	avatarService := avatars.NewAvatarService(avatarRepo)
 
 	appService := admin.NewApp(app)
 	appService.WithUserService(userService)
@@ -177,6 +183,7 @@ func main() {
 	appService.WithFriendshipService(friendshipService)
 	appService.WithDataService(dataService)
 	appService.WithProgressService(progressService)
+	appService.WithAvatarService(avatarService)
 	appService.SetHandlers()
 
 	port := config.GetValue(appPortKey).String()

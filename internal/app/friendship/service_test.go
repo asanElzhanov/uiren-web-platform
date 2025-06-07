@@ -324,7 +324,17 @@ func Test_FriendshipService_GetFriendList_success(t *testing.T) {
 		repo  = NewMockfriendshipRepository(ctrl)
 		srv   = NewFriendshipService(repo, nil)
 		user  = "test_user"
-		fList = FriendList{Usernames: []string{"requester1", "requester2"}, Total: 2}
+		fList = FriendList{
+			Friends: []FriendListEntity{
+				{
+					Username: "requester 1",
+				},
+				{
+					Username: "requester 2",
+				},
+			},
+			Total: 2,
+		}
 	)
 
 	repo.EXPECT().getFriendList(ctx, user).Return(fList, nil)
@@ -361,7 +371,17 @@ func Test_FriendshipService_GetRequestList_success(t *testing.T) {
 		repo  = NewMockfriendshipRepository(ctrl)
 		srv   = NewFriendshipService(repo, nil)
 		user  = "test_user"
-		fList = FriendList{Usernames: []string{"requester1", "requester2"}, Total: 2}
+		fList = FriendList{
+			Friends: []FriendListEntity{
+				{
+					Username: "requester 1",
+				},
+				{
+					Username: "requester 2",
+				},
+			},
+			Total: 2,
+		}
 	)
 
 	repo.EXPECT().getRequestList(ctx, user).Return(fList, nil)

@@ -116,7 +116,6 @@ func (s *UserService) CheckUserExists(ctx context.Context, username string) erro
 	return s.repo.checkUserExists(ctx, username)
 }
 
-// todo: write tests
 func (s *UserService) GetUserProgress(ctx context.Context, id string) (UserProgress, error) {
 	logger.Info("UserService.GetUserProgress new request")
 
@@ -145,7 +144,6 @@ func (s *UserService) GetUserProgress(ctx context.Context, id string) (UserProgr
 	}, nil
 }
 
-// todo: write tests
 func (s *UserService) GetUserByUsername(ctx context.Context, username string) (UserDTO, error) {
 	logger.Info("UserService.GetUserByUsername new request")
 
@@ -159,7 +157,6 @@ func (s *UserService) GetUserByUsername(ctx context.Context, username string) (U
 	return user, nil
 }
 
-// todo: write tests
 func (s *UserService) GetAllUsers(ctx context.Context) ([]UserDTO, error) {
 	logger.Info("UserService.GetUsers new request")
 
@@ -176,8 +173,6 @@ func (s *UserService) GetAllUsers(ctx context.Context) ([]UserDTO, error) {
 
 	return users, nil
 }
-
-//todo: write tests
 
 func (s *UserService) GetUserByID(ctx context.Context, id string) (UserDTO, error) {
 	logger.Info("UserService.GetUserByID new request")

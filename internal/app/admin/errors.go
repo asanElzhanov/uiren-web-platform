@@ -1,6 +1,11 @@
 package admin
 
-import "errors"
+import (
+	"errors"
+	"strings"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 var (
 	// Общие ошибки
@@ -85,4 +90,33 @@ var (
 	ErrInvalidType                = errors.New("invalid type")
 	ErrInvalidCode                = errors.New("invalid code")
 	ErrInvalidAchievementProgress = errors.New("invalid achievement progress")
+
+	ErrInvalidMultipartFile = errors.New("invalid content type: must be multipart/form-data with valid boundary")
 )
+
+func fiberInternalServerError(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
+}
+
+func fiberOK(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "OK"})
+}
+
+func fiberFormFileError(c *fiber.Ctx, err error) error {
+	switch {
+	case errors.Is(err, fiber.ErrUnprocessableEntity):
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", file not provided"})
+	case errors.Is(invalidMultipartFileError(err), ErrInvalidMultipartFile):
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrInvalidMultipartFile.Error()})
+	default:
+		return fiberInternalServerError(c)
+	}
+}
+func invalidMultipartFileError(err error) error {
+	if strings.Contains(err.Error(), "bad boundary") ||
+		strings.Contains(err.Error(), "not multipart/form-data") {
+		return ErrInvalidMultipartFile
+	}
+
+	return fiber.ErrInternalServerError
+}

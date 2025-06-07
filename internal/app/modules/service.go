@@ -24,6 +24,7 @@ type repository interface {
 
 type lessonsService interface {
 	GetLessonsByCodes(ctx context.Context, codes []string) ([]lessons.LessonDTO, error)
+	LessonExists(ctx context.Context, code string) (bool, error)
 }
 
 type ModulesService struct {
@@ -95,7 +96,16 @@ func (s ModulesService) UpdateModule(ctx context.Context, code string, dto Updat
 func (s ModulesService) AddLessonToList(ctx context.Context, code, lessonCode string) error {
 	logger.Info("ModulesService.AddLessonToList new request")
 
-	//todo: need to check if exists
+	exists, err := s.lessonsService.LessonExists(ctx, lessonCode)
+	if err != nil {
+		logger.Error("ModulesService.AddLessonToList lessonsService.LessonExists: ", err)
+		return err
+	}
+
+	if !exists {
+		return lessons.ErrNotFound
+	}
+
 	if err := s.repo.addLessonToList(ctx, code, lessonCode); err != nil {
 		logger.Error("ModulesService.AddLessonToList repo.addLesson: ", err)
 		return err
@@ -115,15 +125,12 @@ func (s ModulesService) DeleteLessonFromList(ctx context.Context, code, lessonCo
 	return nil
 }
 
-//todo: write tests
-
 func (s ModulesService) GetModulesList(ctx context.Context) ([]Module, error) {
 	logger.Info("ModulesService.GetModules new request")
 	// todo: change to func with pagination
 	return s.repo.getAllModules(ctx)
 }
 
-// todo: write tests
 func (s ModulesService) GetAllModulesWithLessons(ctx context.Context) ([]ModuleWithLessons, error) {
 	logger.Info("ModulesService.GetModulesWithLessons new request")
 

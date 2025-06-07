@@ -174,3 +174,18 @@ func (mr *MocklessonsServiceMockRecorder) GetLessonsByCodes(ctx, codes interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLessonsByCodes", reflect.TypeOf((*MocklessonsService)(nil).GetLessonsByCodes), ctx, codes)
 }
+
+// LessonExists mocks base method.
+func (m *MocklessonsService) LessonExists(ctx context.Context, code string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LessonExists", ctx, code)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LessonExists indicates an expected call of LessonExists.
+func (mr *MocklessonsServiceMockRecorder) LessonExists(ctx, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LessonExists", reflect.TypeOf((*MocklessonsService)(nil).LessonExists), ctx, code)
+}

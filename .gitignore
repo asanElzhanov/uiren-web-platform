@@ -1,6 +1,7 @@
 *.log
 *.tmp
 *.swp
+*.png
 
 .vscode/
 .idea/

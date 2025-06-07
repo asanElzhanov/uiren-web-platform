@@ -4,6 +4,7 @@ import (
 	"context"
 	"uiren/internal/app/achievements"
 	"uiren/internal/app/auth"
+	"uiren/internal/app/avatars"
 	"uiren/internal/app/data"
 	"uiren/internal/app/exercises"
 	"uiren/internal/app/friendship"
@@ -16,14 +17,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-func fiberInternalServerError(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": ErrInternalServerError})
-}
-
-func fiberOK(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "OK"})
-}
 
 type modulesService interface {
 	GetModule(ctx context.Context, code string) (modules.ModuleWithLessons, error)
@@ -84,6 +77,7 @@ type friendshipService interface {
 	HandleFriendRequest(ctx context.Context, friendshipRequest friendship.FriendshipRequestDTO) (friendship.Friendship, error)
 	GetFriendList(ctx context.Context, username string) (friendship.FriendList, error)
 	GetRequestList(ctx context.Context, username string) (friendship.FriendList, error)
+	DeleteFriendship(ctx context.Context, req friendship.FriendshipRequestDTO) error
 }
 
 type dataService interface {
@@ -95,12 +89,18 @@ type dataService interface {
 	GetPublicExercise(ctx context.Context, code string) (exercises.Exercise, error)
 
 	GetXPLeaderboard(ctx context.Context) (data.XPLeaderboard, error)
+
+	GetPublicAchievements(ctx context.Context) ([]achievements.AchievementDTO, error)
 }
 
 type progressService interface {
 	UpdateUserProgress(ctx context.Context, req progress.UpdateUserProgressRequest) error
 	RegisterNewBadge(ctx context.Context, req progress.Badge) error
 	GetAllBadges(ctx context.Context) ([]progress.Badge, error)
+}
+
+type avatarService interface {
+	UploadAvatar(ctx context.Context, req avatars.UploadAvatarRequest) error
 }
 
 type App struct {
@@ -114,6 +114,7 @@ type App struct {
 	friendshipService  friendshipService
 	dataService        dataService
 	progressService    progressService
+	avatarService      avatarService
 }
 
 func NewApp(appFiber *fiber.App) *App {
@@ -158,8 +159,13 @@ func (app *App) WithProgressService(progressService progressService) {
 	app.progressService = progressService
 }
 
+func (app *App) WithAvatarService(avatarService avatarService) {
+	app.avatarService = avatarService
+}
+
 func (app *App) SetHandlers() {
 	api := app.appFiber.Group("/api")
+	api.Static("/storage", "./storage")
 
 	//auth
 	api.Post("/sign-in", app.signIn)
@@ -212,6 +218,7 @@ func (app *App) SetHandlers() {
 	friendsApi.Post("/handle-request", app.handleFriendRequest)
 	friendsApi.Get("/friend-list", app.getFriendList)
 	friendsApi.Get("/request-list", app.getRequestList)
+	friendsApi.Delete("/", app.deleteFriendshipInfo)
 	//data
 	dataApi := api.Group("/data", middleware.JWTMiddleware())
 	dataApi.Get("/modules", app.mainPageModules)
@@ -219,6 +226,7 @@ func (app *App) SetHandlers() {
 	dataApi.Get("/exercise", app.getExerciseToPass)
 	dataApi.Get("/users", app.getUserInfo)
 	dataApi.Get("/xp-leaderboard", app.getXPLeaderboard)
+	dataApi.Get("/achievements", app.getPublicAchievements)
 	//progress
 	progressApi := api.Group("/progress", middleware.JWTMiddleware())
 	progressApi.Patch("/", app.updateProgress)
@@ -226,4 +234,10 @@ func (app *App) SetHandlers() {
 	//progress(admin)
 	progressAdminApi := api.Group("/progress-admin", middleware.JWTMiddleware(), middleware.AdminMiddleware())
 	progressAdminApi.Get("/badges", app.getAllBadges)
+	//profile
+	profileAPI := api.Group("/profile", middleware.JWTMiddleware())
+	profileAPI.Patch("/", app.updateProfile)
+	//avatar
+	avatarAPI := api.Group("/avatar", middleware.JWTMiddleware())
+	avatarAPI.Post("/", app.uploadAvatar)
 }

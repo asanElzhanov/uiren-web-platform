@@ -14,8 +14,14 @@ type Friendship struct {
 }
 
 type FriendList struct {
-	Usernames []string `json:"usernames"`
-	Total     int      `json:"total"`
+	Friends []FriendListEntity `json:"usernames"`
+	Total   int                `json:"total"`
+}
+
+type FriendListEntity struct {
+	Username  string `json:"username"`
+	Firstname string `json:"first_name"`
+	Lastname  string `json:"last_name"`
 }
 
 type FriendshipRequestDTO struct {

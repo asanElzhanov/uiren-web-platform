@@ -56,7 +56,7 @@ func (r *achievementRepository) getAllAchievements(ctx context.Context) ([]achie
 			&achievement.id,
 			&achievement.name,
 			&achievement.createdAt,
-			&achievement.deletedAt,
+			&achievement.updatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -369,4 +369,20 @@ func (r *achievementRepository) getLevel(ctx context.Context, achID, level int) 
 		return AchievementLevel{}, err
 	}
 	return result, nil
+}
+
+func (r *achievementRepository) deleteAchievementLevelsByID(ctx context.Context, achID int) error {
+	var (
+		query = `
+		DELETE FROM achievements_levels
+		WHERE achievement_id = $1;
+		`
+	)
+
+	_, err := r.db.Exec(ctx, query, achID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -64,6 +64,21 @@ func (mr *MockrepositoryMockRecorder) deleteExercise(ctx, code interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "deleteExercise", reflect.TypeOf((*Mockrepository)(nil).deleteExercise), ctx, code)
 }
 
+// exerciseExists mocks base method.
+func (m *Mockrepository) exerciseExists(ctx context.Context, code string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "exerciseExists", ctx, code)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// exerciseExists indicates an expected call of exerciseExists.
+func (mr *MockrepositoryMockRecorder) exerciseExists(ctx, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "exerciseExists", reflect.TypeOf((*Mockrepository)(nil).exerciseExists), ctx, code)
+}
+
 // getAllExercises mocks base method.
 func (m *Mockrepository) getAllExercises(ctx context.Context) ([]Exercise, error) {
 	m.ctrl.T.Helper()

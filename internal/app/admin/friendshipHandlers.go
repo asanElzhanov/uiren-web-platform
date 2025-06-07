@@ -141,3 +141,36 @@ func (app *App) getRequestList(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(requestList)
 }
+
+func (app *App) deleteFriendshipInfo(c *fiber.Ctx) error {
+	var (
+		ctx = c.Context()
+		req friendship.FriendshipRequestDTO
+	)
+
+	if err := c.BodyParser(&req); err != nil {
+		logger.Error("app.sendFriendRequest c.BodyParser: ", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	usernameVal := c.Locals("username")
+	username, ok := usernameVal.(string)
+	if !ok {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": ErrBadRequest + ", incorrect token payload(missing username)"})
+	}
+	req.RequesterUsername = username
+
+	if err := app.friendshipService.DeleteFriendship(ctx, req); err != nil {
+		logger.Error("app.deleteFriendshipInfo friendshipService.DeleteFriendship: ", err)
+		switch err {
+		case friendship.ErrFriendshipNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": friendship.ErrFriendshipNotFound.Error()})
+		case friendship.ErrSameUser:
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": friendship.ErrSameUser.Error()})
+		default:
+			return fiberInternalServerError(c)
+		}
+	}
+
+	return fiberOK(c)
+}

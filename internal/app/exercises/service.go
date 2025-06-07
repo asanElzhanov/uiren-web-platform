@@ -19,6 +19,7 @@ type repository interface {
 	deleteExercise(ctx context.Context, code string) error
 
 	getAllExercises(ctx context.Context) ([]Exercise, error)
+	exerciseExists(ctx context.Context, code string) (bool, error)
 }
 
 type ExerciseService struct {
@@ -143,7 +144,6 @@ func (s ExerciseService) UpdateExercise(ctx context.Context, code string, dto Up
 	return nil
 }
 
-// todo write tests
 func (s ExerciseService) GetAllExercises(ctx context.Context) ([]Exercise, error) {
 	logger.Info("ExerciseService.GetAllExercises new requests")
 
@@ -154,4 +154,15 @@ func (s ExerciseService) GetAllExercises(ctx context.Context) ([]Exercise, error
 	}
 
 	return exercises, nil
+}
+
+func (s ExerciseService) ExerciseExists(ctx context.Context, code string) (bool, error) {
+	logger.Info("ExerciseService.ExerciseExists new request")
+
+	exists, err := s.repo.exerciseExists(ctx, code)
+	if err != nil {
+		logger.Error("ExerciseService.ExerciseExists repo.exerciseExists: ", err)
+		return false, err
+	}
+	return exists, nil
 }

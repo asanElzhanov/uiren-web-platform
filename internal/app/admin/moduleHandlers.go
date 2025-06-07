@@ -2,6 +2,7 @@ package admin
 
 import (
 	"encoding/json"
+	"uiren/internal/app/lessons"
 	"uiren/internal/app/modules"
 	"uiren/pkg/logger"
 
@@ -166,6 +167,8 @@ func (app *App) addLessonToList(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": modules.ErrNotFound.Error()})
 		case modules.ErrLessonAlreadyInSet:
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": modules.ErrLessonAlreadyInSet.Error()})
+		case lessons.ErrNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": lessons.ErrNotFound.Error()})
 		default:
 			return fiberInternalServerError(c)
 		}

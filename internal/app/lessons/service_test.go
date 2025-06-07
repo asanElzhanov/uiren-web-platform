@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 	"uiren/internal/app/exercises"
 	"uiren/pkg/logger"
 
@@ -148,6 +149,7 @@ func Test_LessonsService_AddExerciseToList_success(t *testing.T) {
 		exerciseCode     = "exercise_code"
 	)
 
+	exercisesService.EXPECT().ExerciseExists(ctx, exerciseCode).Return(true, nil)
 	repo.EXPECT().addExerciseToList(ctx, lessonCode, exerciseCode).Return(nil)
 
 	err := srv.AddExerciseToList(ctx, lessonCode, exerciseCode)
@@ -166,11 +168,41 @@ func Test_LessonsService_AddExerciseToList_fail(t *testing.T) {
 		exerciseCode     = "exercise_code"
 	)
 
+	exercisesService.EXPECT().ExerciseExists(ctx, exerciseCode).Return(true, nil)
 	repo.EXPECT().addExerciseToList(ctx, lessonCode, exerciseCode).Return(ErrExerciseAlreadyInSet)
 
 	err := srv.AddExerciseToList(ctx, lessonCode, exerciseCode)
 	assert.Error(t, err)
 	assert.Equal(t, ErrExerciseAlreadyInSet, err)
+}
+
+func Test_LessonsService_AddExerciseToList_ExerciseExists(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx              = context.TODO()
+		ctrl             = gomock.NewController(t)
+		exercisesService = NewMockexerciseService(ctrl)
+		repo             = NewMockrepository(ctrl)
+		srv              = NewLessonsService(repo, exercisesService)
+		lessonCode       = "lesson_code"
+		exerciseCode     = "exercise_code"
+		errRepo          = errors.New("error")
+	)
+
+	t.Run("repo error", func(t *testing.T) {
+		exercisesService.EXPECT().ExerciseExists(ctx, exerciseCode).Return(false, errRepo)
+		err := srv.AddExerciseToList(ctx, lessonCode, exerciseCode)
+		assert.Error(t, err)
+		assert.Equal(t, errRepo, err)
+	})
+
+	t.Run("false", func(t *testing.T) {
+		exercisesService.EXPECT().ExerciseExists(ctx, exerciseCode).Return(false, nil)
+		err := srv.AddExerciseToList(ctx, lessonCode, exerciseCode)
+		assert.Error(t, err)
+		assert.Equal(t, exercises.ErrNotFound, err)
+	})
+
 }
 
 func Test_LessonsService_DeleteExerciseFromList_success(t *testing.T) {
@@ -353,4 +385,125 @@ func Test_LessonsService_GetLessonsByCodes_fail_exerciseService(t *testing.T) {
 	result, err := srv.GetLessonsByCodes(ctx, codes)
 	assert.Error(t, err)
 	assert.Nil(t, result)
+}
+
+func Test_LessonsService_LessonExists(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx              = context.TODO()
+		ctrl             = gomock.NewController(t)
+		exercisesService = NewMockexerciseService(ctrl)
+		repo             = NewMockrepository(ctrl)
+		srv              = NewLessonsService(repo, exercisesService)
+		req              = "code"
+		repoErr          = errors.New("error")
+	)
+
+	t.Run("success-true", func(t *testing.T) {
+		repo.EXPECT().lessonExists(ctx, req).Return(true, nil)
+		exists, err := srv.LessonExists(ctx, req)
+		assert.NoError(t, err)
+		assert.True(t, exists)
+	})
+	t.Run("success-false", func(t *testing.T) {
+		repo.EXPECT().lessonExists(ctx, req).Return(false, nil)
+		exists, err := srv.LessonExists(ctx, req)
+		assert.NoError(t, err)
+		assert.False(t, exists)
+	})
+	t.Run("repo error", func(t *testing.T) {
+		repo.EXPECT().lessonExists(ctx, req).Return(true, repoErr)
+		exists, err := srv.LessonExists(ctx, req)
+		assert.Error(t, err)
+		assert.False(t, exists)
+	})
+}
+
+func Test_LessonsService_GetAllLessonsWithExercises(t *testing.T) {
+	t.Parallel()
+	var (
+		ctx              = context.TODO()
+		ctrl             = gomock.NewController(t)
+		exercisesService = NewMockexerciseService(ctrl)
+		repo             = NewMockrepository(ctrl)
+		srv              = NewLessonsService(repo, exercisesService)
+		repoErr          = errors.New("error")
+		lessons          = []lesson{
+			{
+				Code:        "lesson_1",
+				Title:       "Basics of Kazakh",
+				Description: "Learn simple words and greetings",
+				Exercises:   []string{"ex1", "ex2"},
+				CreatedAt:   time.Now(),
+				DeletedAt:   nil,
+			},
+			{
+				Code:        "lesson_2",
+				Title:       "Food Vocabulary",
+				Description: "Names of common food items",
+				Exercises:   []string{"ex3"},
+				CreatedAt:   time.Now(),
+				DeletedAt:   nil,
+			},
+		}
+
+		exerciseMap = map[string][]exercises.Exercise{
+			"lesson_1": {
+				{
+					Code:          "ex1",
+					ExerciseType:  "multiple_choice",
+					Question:      "How do you say 'hello' in Kazakh?",
+					Options:       []string{"Сәлем", "Пока", "Как дела?"},
+					CorrectAnswer: "Сәлем",
+					Explanation:   "‘Сәлем’ means hello.",
+					CreatedAt:     time.Now(),
+				},
+				{
+					Code:          "ex2",
+					ExerciseType:  "manual_typing",
+					Question:      "Type the word for 'thanks' in Kazakh.",
+					CorrectAnswer: "Рахмет",
+					Explanation:   "‘Рахмет’ is the Kazakh word for thanks.",
+					CreatedAt:     time.Now(),
+				},
+			},
+			"lesson_2": {
+				{
+					Code:         "ex3",
+					ExerciseType: "match_pairs",
+					Question:     "Match the Kazakh words with English ones.",
+					Pairs:        []exercises.Pair{{Term: "Сүт", Match: "Milk"}, {Term: "Нан", Match: "Bread"}},
+					Explanation:  "Match based on meaning.",
+					CreatedAt:    time.Now(),
+				},
+			},
+		}
+	)
+
+	t.Run("success", func(t *testing.T) {
+		var resultExpected []LessonDTO
+		repo.EXPECT().getAllLessons(ctx).Return(lessons, nil)
+		for _, lesson := range lessons {
+			exercisesService.EXPECT().GetExercisesByCodes(ctx, lesson.Exercises).Return(exerciseMap[lesson.Code], nil)
+			resultExpected = append(resultExpected, lesson.toDTO(exerciseMap[lesson.Code]))
+		}
+		result, err := srv.GetAllLessonsWithExercises(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, result, resultExpected)
+	})
+
+	t.Run("repo failed#1", func(t *testing.T) {
+		repo.EXPECT().getAllLessons(ctx).Return(nil, repoErr)
+		result, err := srv.GetAllLessonsWithExercises(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("repo failed#2", func(t *testing.T) {
+		repo.EXPECT().getAllLessons(ctx).Return(lessons, nil)
+		exercisesService.EXPECT().GetExercisesByCodes(ctx, lessons[0].Exercises).Return(nil, repoErr)
+		result, err := srv.GetAllLessonsWithExercises(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+	})
 }

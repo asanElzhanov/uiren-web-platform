@@ -24,6 +24,7 @@ type achievementRepo interface {
 	addLevel(ctx context.Context, dto AddAchievementLevelDTO) error
 	deleteLevel(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error
 	decrementUpperLevels(ctx context.Context, tx transaction, dto DeleteAchievementLevelDTO) error
+	deleteAchievementLevelsByID(ctx context.Context, achID int) error
 }
 
 type transaction interface {
@@ -74,7 +75,10 @@ func (s AchievementService) DeleteAchievement(ctx context.Context, id int) error
 		logger.Error("AchievementService.DeleteAchievement achievementRepo.deleteAchievement: ", err)
 		return err
 	}
-	//todo: delete achievement levels
+
+	if err := s.achievementRepo.deleteAchievementLevelsByID(ctx, id); err != nil {
+		logger.Error("AchievementService.DeleteAchievement achievementRepo.deleteAchievementLevelsByID: ", err)
+	}
 	return nil
 }
 
@@ -166,7 +170,6 @@ func (s AchievementService) GetLevel(ctx context.Context, achID, level int) (Ach
 	return achievementLevel, nil
 }
 
-// todo write tests
 func (s AchievementService) GetAllAchievements(ctx context.Context) ([]AchievementDTO, error) {
 	logger.Info("AchievementService.GetAllAchievements new request")
 

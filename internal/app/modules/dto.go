@@ -22,7 +22,7 @@ type ModuleWithLessons struct {
 	Code        string              `json:"code"`
 	Title       string              `json:"title"`
 	Description string              `json:"description"`
-	Goal        string              `json:"goadl"`
+	Goal        string              `json:"goal"`
 	Difficulty  string              `json:"difficulty"`
 	UnlockReq   UnlockRequirements  `json:"unlock_requirements"`
 	Reward      Reward              `json:"reward"`

@@ -138,6 +138,21 @@ func (mr *MockrepositoryMockRecorder) getLessonsByCodes(ctx, codes interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getLessonsByCodes", reflect.TypeOf((*Mockrepository)(nil).getLessonsByCodes), ctx, codes)
 }
 
+// lessonExists mocks base method.
+func (m *Mockrepository) lessonExists(ctx context.Context, code string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "lessonExists", ctx, code)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// lessonExists indicates an expected call of lessonExists.
+func (mr *MockrepositoryMockRecorder) lessonExists(ctx, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "lessonExists", reflect.TypeOf((*Mockrepository)(nil).lessonExists), ctx, code)
+}
+
 // updateLesson mocks base method.
 func (m *Mockrepository) updateLesson(ctx context.Context, code string, dto UpdateLessonDTO) error {
 	m.ctrl.T.Helper()
@@ -173,6 +188,21 @@ func NewMockexerciseService(ctrl *gomock.Controller) *MockexerciseService {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockexerciseService) EXPECT() *MockexerciseServiceMockRecorder {
 	return m.recorder
+}
+
+// ExerciseExists mocks base method.
+func (m *MockexerciseService) ExerciseExists(ctx context.Context, code string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExerciseExists", ctx, code)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExerciseExists indicates an expected call of ExerciseExists.
+func (mr *MockexerciseServiceMockRecorder) ExerciseExists(ctx, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExerciseExists", reflect.TypeOf((*MockexerciseService)(nil).ExerciseExists), ctx, code)
 }
 
 // GetExercisesByCodes mocks base method.

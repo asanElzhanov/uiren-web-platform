@@ -1,6 +1,7 @@
 package data
 
 import (
+	"time"
 	"uiren/internal/app/modules"
 	"uiren/internal/app/progress"
 	"uiren/internal/app/users"
@@ -10,11 +11,13 @@ import (
 type UserInfo struct {
 	ID        string              `json:"id"`
 	Username  string              `json:"username"`
-	Firstname string              `json:"firstname"`
-	Lastname  string              `json:"lastname"`
+	Firstname string              `json:"first_name"`
+	Lastname  string              `json:"last_name"`
 	Email     string              `json:"email"`
 	Phone     string              `json:"phone"`
 	Progress  *users.UserProgress `json:"progress"`
+	CreatedAt time.Time           `json:"created_at"`
+	AvatarURL string              `json:"avatar_url"`
 }
 
 type ModulesList struct {
